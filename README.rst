@@ -20,30 +20,25 @@ If you want to use the module in your project, add this line to the project's
 Usage
 -----
 
-Setting up the OAuth credentials
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Initialization
+~~~~~~~~~~~~~~
 
 To start using the API, you should get a pair of OAuth application login and
 password from NIC.RU. Here is the registration page:
 https://www.nic.ru/manager/oauth.cgi?step=oauth.app_register
 
-Create a JSON file with the obtained credentials::
-
-    {
-        "APP_LOGIN": "your_application_login",
-        "APP_PASSWORD": "your_application_secret"
-    }
-
-Make it secure and available to your Python app.
-
-Initialization
-~~~~~~~~~~~~~~
-
-Create an instance of ``nic_api.DnsApi`` and provide the filename of the
-application credentials storage you created above::
+Create an instance of ``nic_api.DnsApi`` and provide the OAuth application
+credentials::
 
     from nic_api import DnsApi
-    api = DnsApi('/path/to/oauth_config.json')
+    oauth_config = {
+        'APP_LOGIN': 'your_application_login',
+        'APP_PASSWORD': 'your_application_secret'
+    }
+    api = DnsApi(oauth_config)
+
+Authorization
+~~~~~~~~~~~~~
 
 Call the ``authorize()`` method and specify the username and the password
 of your NIC.RU account, and a file to store the OAuth token for future use::

@@ -11,6 +11,7 @@ setup(
     version='0.1',
     description='NIC.RU API wrapper library',
     long_description=long_description,
+    url='https://github.com/andr1an/nic-api',
     author='Sergey Andrianov',
     author_email='info@andrian.ninja',
     license='GPLv3',
@@ -27,4 +28,8 @@ setup(
     install_requires=[
         'requests>=2.4',
     ],
+    project_urls={
+        'Bug Reports': 'https://github.com/andr1an/nic-api/issues',
+        'Source': 'https://github.com/andr1an/nic-api',
+    },
 )
