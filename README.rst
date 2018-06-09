@@ -20,6 +20,8 @@ If you want to use the module in your project, add this line to the project's
 Usage
 -----
 
+.. default-literal-block::  code-block python
+
 Initialization
 ~~~~~~~~~~~~~~
 
