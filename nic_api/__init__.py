@@ -101,16 +101,16 @@ class DnsApi(object):
     cached token.
 
     Arguments:
-        oauth_config: a path to the OAuth app credentials file;
+        oauth_config: a dict with OAuth app credentials;
         default_service: a default name of NIC service to use in API calls;
         default_zone: a default DNS zone to use in API calls;
         debug: bool: enables debug logging level.
 
 
-    Configuration file for the OAuth should contain an application login
-    and a password. Example:
+    oauth_config should contain the application login and the password.
+    Example:
 
-        {"APP_LOGIN": "aaaaaa", "APP_PASSWORD": "bbbbb"}
+        {'APP_LOGIN': 'aaaaaa', 'APP_PASSWORD': 'bbbbb'}
 
     You can obtain these credentials at the NIC.RU application authorization
     page: https://www.nic.ru/manager/oauth.cgi?step=oauth.app_register
