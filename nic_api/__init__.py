@@ -18,7 +18,7 @@ BASE_URL = 'https://api.nic.ru/dns-master'
 
 DEFAULT_TTL = 600
 
-_RECORD_CLASSES = (ARecord, CNAMERecord)
+_RECORD_CLASSES = (ARecord, CNAMERecord, TXTRecord, SOARecord, NSRecord, MXRecord))
 
 
 def is_sequence(arg):

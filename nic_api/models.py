@@ -2,6 +2,7 @@
 
 from xml.etree import ElementTree
 
+DEFAULT_TTL = 3600
 
 def _strtobool(string):
     """Converts a string from NIC API response to a bool."""
@@ -31,8 +32,11 @@ def parse_record(rr):
         'CNAME': CNAMERecord,
         'MX': MXRecord,
         'TXT': TXTRecord,
+	'SRV': SRVRecord,
     }
-
+    
+    DEFAULT_TTL = 3600
+   
     record_type = rr.find('type').text
 
     if record_type not in record_classes:
@@ -263,7 +267,10 @@ class ARecord(DNSRecord):
         id_ = rr.attrib['id'] if 'id' in rr.attrib else None
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
-        ttl = rr.find('ttl').text
+	if rr.find('ttl'):
+        	ttl = rr.find('ttl').text
+        else:
+        	ttl = DEFAULT_TTL
         a = rr.find('a').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, a=a)
 
@@ -340,8 +347,11 @@ class MXRecord(DNSRecord):
         id_ = rr.attrib['id'] if 'id' in rr.attrib else None
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
-        ttl = rr.find('ttl').text
-        preference = rr.find('mx/preference').text
+        if rr.find('ttl'):
+                ttl = rr.find('ttl').text
+        else:
+                ttl = DEFAULT_TTL
+	preference = rr.find('mx/preference').text
         exchange = rr.find('mx/exchange/name').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl,
                    preference=preference, exchange=exchange)
@@ -358,8 +368,22 @@ class TXTRecord(DNSRecord):
         self.txt = txt
 
     def to_xml(self):
-        # TODO: add implementation if needed
-        raise NotImplementedError('Not implemented!')
+        """Returns an XML representation of record object."""
+	root = ElementTree.Element('rr')
+	if self.id:
+		root.attrib['id'] = self.id
+	_name = ElementTree.SubElement(root, 'name')
+	_name.text = self.name
+	_ttl = ElementTree.SubElement(root, 'ttl')
+	_ttl.text = str(self.ttl)
+	_type = ElementTree.SubElement(root, 'type')
+	_type.text = 'TXT'
+	_a = ElementTree.SubElement(root, 'txt')
+	_string = ElementTree.SubElement(_a, 'string')
+	_string.text = self.txt
+	_a.text = _string
+	return ElementTree.tostring(root)
+	raise NotImplementedError('Not implemented!')
 
     @classmethod
     def from_xml(cls, rr):
@@ -374,8 +398,21 @@ class TXTRecord(DNSRecord):
         id_ = rr.attrib['id'] if 'id' in rr.attrib else None
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
-        ttl = rr.find('ttl').text
-        txt = [string.text for string in rr.findall('txt/string')]
+        if rr.find('ttl'):
+                ttl = rr.find('ttl').text
+        else:
+                ttl = DEFAULT_TTL
+	txt = [string.text for string in rr.findall('txt/string')]
         if len(txt) == 1:
             txt = txt[0]
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, txt=txt)
+    
+#stub for SRV
+class SRVRecord(DNSRecord):
+    def __init__(self, srv, **kwargs):
+        super(SRVRecord, self).__init__(**kwargs)
+        self.srv = srv
+    @classmethod
+    def from_xml(cls, rr):
+        return rr
+
