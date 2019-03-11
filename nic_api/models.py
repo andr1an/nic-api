@@ -383,7 +383,6 @@ class TXTRecord(DNSRecord):
 	_string.text = self.txt
 	_a.text = _string
 	return ElementTree.tostring(root)
-	raise NotImplementedError('Not implemented!')
 
     @classmethod
     def from_xml(cls, rr):
