@@ -276,7 +276,7 @@ class ARecord(DNSRecord):
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
         elem_ttl = rr.find('ttl')
-        ttl = elem_ttl.text if elem_ttl else None
+        ttl = elem_ttl.text if elem_ttl is not None else None
         a = rr.find('a').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, a=a)
 
@@ -325,7 +325,7 @@ class CNAMERecord(DNSRecord):
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
         elem_ttl = rr.find('ttl')
-        ttl = elem_ttl.text if elem_ttl else None
+        ttl = elem_ttl.text if elem_ttl is not None else None
         cname = rr.find('cname/name').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, cname=cname)
 
@@ -362,7 +362,7 @@ class MXRecord(DNSRecord):
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
         elem_ttl = rr.find('ttl')
-        ttl = elem_ttl.text if elem_ttl else None
+        ttl = elem_ttl.text if elem_ttl is not None else None
         preference = rr.find('mx/preference').text
         exchange = rr.find('mx/exchange/name').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl,
@@ -413,7 +413,7 @@ class TXTRecord(DNSRecord):
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
         elem_ttl = rr.find('ttl')
-        ttl = elem_ttl.text if elem_ttl else None
+        ttl = elem_ttl.text if elem_ttl is not None else None
         txt = [string.text for string in rr.findall('txt/string')]
         if len(txt) == 1:
             txt = txt[0]
