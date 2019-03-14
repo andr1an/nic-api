@@ -29,7 +29,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    python_requires='>=2.7, <=3.7',
+    python_requires='>=2.7, <3.8',
     install_requires=[
         'requests>=2.4',
     ],
