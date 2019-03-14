@@ -375,8 +375,21 @@ class TXTRecord(DNSRecord):
         self.txt = txt
 
     def to_xml(self):
-        # TODO: add implementation if needed
-        raise NotImplementedError('Not implemented!')
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element('rr')
+        if self.id:
+            root.attrib['id'] = self.id
+        _name = ElementTree.SubElement(root, 'name')
+        _name.text = self.name
+        if self.ttl is not None:
+            _ttl = ElementTree.SubElement(root, 'ttl')
+            _ttl.text = str(self.ttl)
+        _type = ElementTree.SubElement(root, 'type')
+        _type.text = 'TXT'
+        _txt = ElementTree.SubElement(root, 'txt')
+        _txt_string = ElementTree.SubElement(_txt, 'string')
+        _txt_string.text = self.txt
+        return ElementTree.tostring(root)
 
     @classmethod
     def from_xml(cls, rr):

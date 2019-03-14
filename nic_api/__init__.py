@@ -21,6 +21,7 @@ DEFAULT_TTL = 600
 _RECORD_CLASSES_CAN_ADD = (
     ARecord,
     CNAMERecord,
+    TXTRecord,
 )
 
 
