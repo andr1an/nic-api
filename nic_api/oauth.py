@@ -75,7 +75,7 @@ class OAuth2Token(object):
     def from_cache(cls, filename):
         """Alternative constructor: loads the token from a JSON cache file."""
         mtime = os.path.getmtime(filename)
-        with open(filename, 'rb') as fp_cache:
+        with open(filename, 'r') as fp_cache:
             cache_data = json.load(fp_cache)
         return cls(mtime=mtime, **cache_data)
 
@@ -83,7 +83,7 @@ class OAuth2Token(object):
         """"Saves the token to the JSON cache file."""
         old_umask = os.umask(0o077)
         try:
-            with open(filename, 'wb') as fp_cache:
+            with open(filename, 'w') as fp_cache:
                 json.dump(self.as_dict, fp_cache)
         finally:
             os.umask(old_umask)

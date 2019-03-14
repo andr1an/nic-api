@@ -1,5 +1,6 @@
 """NIC.RU (Ru-Center) DNS services manager."""
 
+from __future__ import print_function
 import os
 import sys
 import logging
@@ -45,20 +46,20 @@ def pprint(record):
                   {minimum:>50})""")
 
     if isinstance(record, ARecord):
-        print _format_default.format(record.name, record.ttl, 'A', record.a)
+        print(_format_default.format(record.name, record.ttl, 'A', record.a))
     elif isinstance(record, CNAMERecord):
-        print _format_default.format(
-            record.name, record.ttl, 'CNAME', record.cname)
+        print(_format_default.format(
+            record.name, record.ttl, 'CNAME', record.cname))
     elif isinstance(record, MXRecord):
-        print _format_mx.format(
-            record.name, record.ttl, 'MX', record.preference, record.exchange)
+        print(_format_mx.format(
+            record.name, record.ttl, 'MX', record.preference, record.exchange))
     elif isinstance(record, TXTRecord):
-        print _format_default.format(
-            record.name, record.ttl, 'TXT', record.txt)
+        print(_format_default.format(
+            record.name, record.ttl, 'TXT', record.txt))
     elif isinstance(record, NSRecord):
-        print _format_default.format(record.name, ' ', 'NS', record.ns)
+        print(_format_default.format(record.name, ' ', 'NS', record.ns))
     elif isinstance(record, SOARecord):
-        print _format_soa.format(
+        print(_format_soa.format(
             name=record.name,
             mname=record.mname.name,
             rname=record.rname.name,
@@ -67,10 +68,10 @@ def pprint(record):
             retry=record.retry,
             expire=record.expire,
             minimum=record.minimum
-        )
+        ))
     else:
-        print record
-        # print 'Unknown record type'
+        print(record)
+        # print('Unknown record type')
 
 
 def get_data(response):
