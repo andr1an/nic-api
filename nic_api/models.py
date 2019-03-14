@@ -228,11 +228,14 @@ class NSRecord(DNSRecord):
 class ARecord(DNSRecord):
     """Model of A record."""
 
-    def __init__(self, ttl, a, **kwargs):
+    ttl = None
+
+    def __init__(self, a, ttl=None, **kwargs):
         super(ARecord, self).__init__(**kwargs)
-        self.ttl = int(ttl)
-        if self.ttl == 0:
-            raise ValueError('Invalid TTL!')
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError('Invalid TTL!')
         self.a = a
 
     def to_xml(self):
@@ -242,8 +245,9 @@ class ARecord(DNSRecord):
             root.attrib['id'] = self.id
         _name = ElementTree.SubElement(root, 'name')
         _name.text = self.name
-        _ttl = ElementTree.SubElement(root, 'ttl')
-        _ttl.text = str(self.ttl)
+        if self.ttl is not None:
+            _ttl = ElementTree.SubElement(root, 'ttl')
+            _ttl.text = str(self.ttl)
         _type = ElementTree.SubElement(root, 'type')
         _type.text = 'A'
         _a = ElementTree.SubElement(root, 'a')
@@ -263,7 +267,8 @@ class ARecord(DNSRecord):
         id_ = rr.attrib['id'] if 'id' in rr.attrib else None
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
-        ttl = rr.find('ttl').text
+        elem_ttl = rr.find('ttl')
+        ttl = elem_ttl.text if elem_ttl else None
         a = rr.find('a').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, a=a)
 
@@ -271,11 +276,14 @@ class ARecord(DNSRecord):
 class CNAMERecord(DNSRecord):
     """Model of CNAME record."""
 
-    def __init__(self, ttl, cname, **kwargs):
+    ttl = None
+
+    def __init__(self, cname, ttl=None, **kwargs):
         super(CNAMERecord, self).__init__(**kwargs)
-        self.ttl = int(ttl)
-        if self.ttl == 0:
-            raise ValueError('Invalid TTL!')
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError('Invalid TTL!')
         self.cname = cname
 
     def to_xml(self):
@@ -285,8 +293,9 @@ class CNAMERecord(DNSRecord):
             root.attrib['id'] = self.id
         _name = ElementTree.SubElement(root, 'name')
         _name.text = self.name
-        _ttl = ElementTree.SubElement(root, 'ttl')
-        _ttl.text = str(self.ttl)
+        if self.ttl is not None:
+            _ttl = ElementTree.SubElement(root, 'ttl')
+            _ttl.text = str(self.ttl)
         _type = ElementTree.SubElement(root, 'type')
         _type.text = 'CNAME'
         _cname = ElementTree.SubElement(root, 'cname')
@@ -307,7 +316,8 @@ class CNAMERecord(DNSRecord):
         id_ = rr.attrib['id'] if 'id' in rr.attrib else None
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
-        ttl = rr.find('ttl').text
+        elem_ttl = rr.find('ttl')
+        ttl = elem_ttl.text if elem_ttl else None
         cname = rr.find('cname/name').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, cname=cname)
 
@@ -315,11 +325,14 @@ class CNAMERecord(DNSRecord):
 class MXRecord(DNSRecord):
     """Model of MX record."""
 
-    def __init__(self, ttl, preference, exchange, **kwargs):
+    ttl = None
+
+    def __init__(self, preference, exchange, ttl=None, **kwargs):
         super(MXRecord, self).__init__(**kwargs)
-        self.ttl = int(ttl)
-        if self.ttl == 0:
-            raise ValueError('Invalid TTL!')
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError('Invalid TTL!')
         self.preference = int(preference)
         self.exchange = exchange
 
@@ -340,7 +353,8 @@ class MXRecord(DNSRecord):
         id_ = rr.attrib['id'] if 'id' in rr.attrib else None
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
-        ttl = rr.find('ttl').text
+        elem_ttl = rr.find('ttl')
+        ttl = elem_ttl.text if elem_ttl else None
         preference = rr.find('mx/preference').text
         exchange = rr.find('mx/exchange/name').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl,
@@ -350,11 +364,14 @@ class MXRecord(DNSRecord):
 class TXTRecord(DNSRecord):
     """Model of TXT record."""
 
-    def __init__(self, ttl, txt, **kwargs):
+    ttl = None
+
+    def __init__(self, txt, ttl=None, **kwargs):
         super(TXTRecord, self).__init__(**kwargs)
-        self.ttl = int(ttl)
-        if self.ttl == 0:
-            raise ValueError('Invalid TTL!')
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError('Invalid TTL!')
         self.txt = txt
 
     def to_xml(self):
@@ -374,7 +391,8 @@ class TXTRecord(DNSRecord):
         id_ = rr.attrib['id'] if 'id' in rr.attrib else None
         name = rr.find('name').text
         idn_name = rr.find('idn-name').text
-        ttl = rr.find('ttl').text
+        elem_ttl = rr.find('ttl')
+        ttl = elem_ttl.text if elem_ttl else None
         txt = [string.text for string in rr.findall('txt/string')]
         if len(txt) == 1:
             txt = txt[0]
