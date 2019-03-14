@@ -18,7 +18,10 @@ BASE_URL = 'https://api.nic.ru/dns-master'
 
 DEFAULT_TTL = 600
 
-_RECORD_CLASSES = (ARecord, CNAMERecord)
+_RECORD_CLASSES_CAN_ADD = (
+    ARecord,
+    CNAMERecord,
+)
 
 
 def is_sequence(arg):
@@ -245,7 +248,7 @@ class DnsApi(object):
         rr_list = []  # for XML representations
 
         for record in _records:
-            if not isinstance(record, _RECORD_CLASSES):
+            if not isinstance(record, _RECORD_CLASSES_CAN_ADD):
                 raise TypeError('{} is not a valid DNS record!'.format(record))
             record_xml = record.to_xml()
             rr_list.append(record_xml)
