@@ -8,7 +8,7 @@ long_description = open(os.path.join(here, 'README.rst'), 'r').read()
 
 setup(
     name='nic_api',
-    version='0.2.0',
+    version='0.2.1',
     description='NIC.RU API wrapper library',
     long_description=long_description,
     url='https://github.com/andr1an/nic-api',
