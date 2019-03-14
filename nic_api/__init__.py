@@ -305,4 +305,15 @@ class DnsApi(object):
                 response.text))
         self.logger.info('Changes committed!')
 
+    def rollback(self, service=None, zone=None):
+        """Rolls back changes in zone."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._post(
+            '/services/{}/zones/{}/rollback'.format(service, zone))
+        if response.status_code != requests.codes.ok:
+            raise DnsApiException('Failed to rollback changes:\n{}'.format(
+                response.text))
+        self.logger.info('Changes are rolled back!')
+
 # vim: ts=4:sw=4:et:sta:si
