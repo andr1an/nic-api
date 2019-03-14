@@ -200,7 +200,10 @@ class DnsApi(object):
             a list of NICZone objects.
         """
         service = self.default_service if service is None else service
-        response = self._get('/services/{}/zones'.format(service))
+        if service is None:
+            response = self._get('/zones'.format(service))
+        else:
+            response = self._get('/services/{}/zones'.format(service))
         data = get_data(response)
         return [NICZone.from_xml(zone) for zone in data]
 
