@@ -57,7 +57,7 @@ class NICService(object):
     """Model of service object."""
 
     def __init__(self, admin, domains_limit, domains_num, enable, has_primary,
-                 name, payer, rr_limit, rr_num, tariff):
+                 name, payer, tariff, rr_limit=None, rr_num=None):
         self.admin = admin
         self.domains_limit = int(domains_limit)
         self.domains_num = int(domains_num)
@@ -65,8 +65,10 @@ class NICService(object):
         self.has_primary = has_primary
         self.name = name
         self.payer = payer
-        self.rr_limit = int(rr_limit)
-        self.rr_num = int(rr_num)
+        if rr_limit is not None:
+            self.rr_limit = int(rr_limit)
+        if rr_num is not None:
+            self.rr_num = int(rr_num)
         self.tariff = tariff
 
     def __repr__(self):
