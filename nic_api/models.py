@@ -26,7 +26,8 @@ def parse_record(rr):
         rr: an instance if ElementTree.Element: <rr> tag from API response;
 
     Returns:
-        one of SOARecord, NSRecord, ARecord, CNAMERecord, MXRecord, TXTRecord.
+        one of SOARecord, NSRecord, ARecord, AAAARecord, CNAMERecord, MXRecord,
+        TXTRecord.
     """
     # TODO: move this to the DNSRecord class as "from_xml"
     if not isinstance(rr, ElementTree.Element):
@@ -36,6 +37,7 @@ def parse_record(rr):
         'SOA': SOARecord,
         'NS': NSRecord,
         'A': ARecord,
+        'AAAA': AAAARecord,
         'CNAME': CNAMERecord,
         'MX': MXRecord,
         'TXT': TXTRecord,
@@ -281,6 +283,54 @@ class ARecord(DNSRecord):
         ttl = elem_ttl.text if elem_ttl is not None else None
         a = rr.find('a').text
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, a=a)
+
+
+class AAAARecord(DNSRecord):
+    """Model of AAAA record."""
+
+    ttl = None
+
+    def __init__(self, aaaa, ttl=None, **kwargs):
+        super(AAAARecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError('Invalid TTL!')
+        self.aaaa = aaaa
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element('rr')
+        if self.id:
+            root.attrib['id'] = self.id
+        _name = ElementTree.SubElement(root, 'name')
+        _name.text = self.name
+        if self.ttl is not None:
+            _ttl = ElementTree.SubElement(root, 'ttl')
+            _ttl.text = str(self.ttl)
+        _type = ElementTree.SubElement(root, 'type')
+        _type.text = 'AAAA'
+        _aaaa = ElementTree.SubElement(root, 'aaaa')
+        _aaaa.text = self.aaaa
+        return ElementTree.tostring(root, encoding=_XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of AAAARecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find('type').text != 'AAAA':
+            raise ValueError('Record is not an AAAA record!')
+
+        id_ = rr.attrib['id'] if 'id' in rr.attrib else None
+        name = rr.find('name').text
+        idn_name = rr.find('idn-name').text
+        elem_ttl = rr.find('ttl')
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        aaaa = rr.find('aaaa').text
+        return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, aaaa=aaaa)
 
 
 class CNAMERecord(DNSRecord):
