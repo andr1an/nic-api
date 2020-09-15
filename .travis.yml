@@ -12,6 +12,8 @@ matrix:
       dist: trusty
     - python: 3.7
       dist: xenial
+    - python: 3.8
+      dist: bionic
 
 install:
   - pip install .
