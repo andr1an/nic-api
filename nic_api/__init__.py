@@ -21,6 +21,7 @@ DEFAULT_TTL = 600
 
 _RECORD_CLASSES_CAN_ADD = (
     ARecord,
+    AAAARecord,
     CNAMERecord,
     TXTRecord,
 )
@@ -47,6 +48,8 @@ def pprint(record):
 
     if isinstance(record, ARecord):
         print(_format_default.format(record.name, record.ttl, 'A', record.a))
+    if isinstance(record, AAAARecord):
+        print(_format_default.format(record.name, record.ttl, 'AAAA', record.a))
     elif isinstance(record, CNAMERecord):
         print(_format_default.format(
             record.name, record.ttl, 'CNAME', record.cname))
