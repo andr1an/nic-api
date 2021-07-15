@@ -21,6 +21,7 @@ DEFAULT_TTL = 600
 
 _RECORD_CLASSES_CAN_ADD = (
     ARecord,
+    AAAARecord,
     CNAMERecord,
     TXTRecord,
 )
@@ -46,7 +47,19 @@ def pprint(record):
                   {minimum:>50})""")
 
     if isinstance(record, ARecord):
-        print(_format_default.format(record.name, record.ttl, 'A', record.a))
+        print(_format_default.format(
+            record.name,
+            record.ttl if record.ttl is not None else '',
+            'A',
+            record.a,
+        ))
+    elif isinstance(record, AAAARecord):
+        print(_format_default.format(
+            record.name,
+            record.ttl if record.ttl is not None else '',
+            'AAAA',
+            record.aaaa,
+        ))
     elif isinstance(record, CNAMERecord):
         print(_format_default.format(
             record.name, record.ttl, 'CNAME', record.cname))
@@ -71,7 +84,7 @@ def pprint(record):
         ))
     else:
         print(record)
-        # print('Unknown record type')
+        print('Unknown record type: {}'.format(type(record)))
 
 
 def get_data(response):
