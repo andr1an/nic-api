@@ -16,6 +16,8 @@ matrix:
       dist: bionic
     - python: 3.9
       dist: bionic
+    - python: 3.10
+      dist: bionic
 
 install:
   - pip install .
