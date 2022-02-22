@@ -10,23 +10,24 @@ from nic_api.exceptions import DnsApiException
 from nic_api.exceptions import EmptyCredentials
 
 
-OAUTH_URL = 'https://api.nic.ru/oauth/token'
+OAUTH_URL = "https://api.nic.ru/oauth/token"
 
 
 def get_token(oauth_config, username, password):
     """Returns a new OAuth token."""
     if not all([username, password]):
         raise EmptyCredentials(
-            'No credentials were provided for the OAuth token request!')
+            "No credentials were provided for the OAuth token request!"
+        )
 
     oauth_data = {
-        'grant_type': 'password',
-        'username': username,
-        'password': password,
-        'scope': r'.+:/dns-master/.+'
+        "grant_type": "password",
+        "username": username,
+        "password": password,
+        "scope": r".+:/dns-master/.+",
     }
 
-    oauth_creds = (oauth_config['APP_LOGIN'], oauth_config['APP_PASSWORD'])
+    oauth_creds = (oauth_config["APP_LOGIN"], oauth_config["APP_PASSWORD"])
 
     result = requests.post(OAUTH_URL, data=oauth_data, auth=oauth_creds)
 
@@ -66,24 +67,24 @@ class OAuth2Token(object):
     def as_dict(self):
         """Returns dict for storing token in cache, i.e. JSON."""
         return {
-            'access_token': self._access_token,
-            'token_type': self._token_type,
-            'expires_in': str(self._expires_in),
+            "access_token": self._access_token,
+            "token_type": self._token_type,
+            "expires_in": str(self._expires_in),
         }
 
     @classmethod
     def from_cache(cls, filename):
         """Alternative constructor: loads the token from a JSON cache file."""
         mtime = os.path.getmtime(filename)
-        with open(filename, 'r') as fp_cache:
+        with open(filename, "r") as fp_cache:
             cache_data = json.load(fp_cache)
         return cls(mtime=mtime, **cache_data)
 
     def save_cache(self, filename):
-        """"Saves the token to the JSON cache file."""
+        """Saves the token to the JSON cache file."""
         old_umask = os.umask(0o077)
         try:
-            with open(filename, 'w') as fp_cache:
+            with open(filename, "w") as fp_cache:
                 json.dump(self.as_dict, fp_cache)
         finally:
             os.umask(old_umask)
