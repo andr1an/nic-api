@@ -5,7 +5,7 @@ compatibility.
 import random
 import textwrap
 
-from nic_api.models import *
+from nic_api.models import ARecord, CNAMERecord, TXTRecord
 
 
 def test_a_root():

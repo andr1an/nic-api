@@ -33,30 +33,34 @@ credentials:
 .. code:: python
 
     from nic_api import DnsApi
-    oauth_config = {
-        'APP_LOGIN': 'your_application_login',
-        'APP_PASSWORD': 'your_application_secret'
-    }
-    api = DnsApi(oauth_config)
+    app_login = "your_application_login"
+    app_password = "your_application_secret"
+    api = DnsApi(app_login, app_password)
 
 Authorization
 ~~~~~~~~~~~~~
 
-Call the ``authorize()`` method and specify the username and the password
-of your NIC.RU account, and a file to store the OAuth token for future use:
+Call the ``get_token()`` method and specify the username and the password for
+your NIC.RU account:
 
 .. code:: python
 
-    api.authorize(username='Your_account/NIC-D',
-                  password='Your_password',
-                  token_filename='nic_token.json')
+    api.get_token(
+        username="Your_account/NIC-D",
+        password="Your_password",
+    )
 
 Now you are ready to use the API.
 
-While the token in ``token_filename`` file is valid, you don't need to
-provide neither username or password to access the API - just create
-an instance of the ``DnsApi`` class with the same OAuth config, and pass only
-``token_filename`` to the ``authorize()`` method.
+While the token is valid, you don't need to provide neither client username or
+password to access the API – just create an instance of the ``DnsApi`` class
+with the same OAuth config, and pass the cached token as ``token`` parameter:
+
+.. code:: python
+
+    api = DnsApi(app_login, app_password, token)
+
+You can add a callback to cache the token with ``token_updater_clb`` parameter.
 
 Viewing services and DNS zones
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,12 +71,12 @@ In the NIC.RU, DNS zones are located in "services":
 
     api.services()
 
-Usually there is one service per account. Let's view available zones in the
+Usually, there is one service per account. Let's view available zones in the
 service ``MY_SERVICE``:
 
 .. code:: python
 
-    api.zones('MY_SERVICE')
+    api.zones("MY_SERVICE")
 
 **Always check if the zone has any uncommitted changes to it before
 making any modifications - your commit will apply other changes too!**
@@ -85,7 +89,7 @@ zone name:
 
 .. code:: python
 
-    api.records('MY_SERIVCE', 'example.com')
+    api.records("MY_SERIVCE", "example.com")
 
 Creating a record
 ~~~~~~~~~~~~~~~~~
@@ -96,14 +100,14 @@ subclasses, i.e. ``ARecord``:
 .. code:: python
 
     from nic_api.models import ARecord
-    record_www = ARecord(name='www', a='8.8.8.8', ttl=3600)
+    record_www = ARecord(name="www", a="8.8.8.8", ttl=3600)
 
 Add this record to the zone and commit the changes:
 
 .. code:: python
 
-    api.add_record(record_www, 'MY_SERVICE', 'example.com')
-    api.commit('MY_SERVICE', 'example.com')
+    api.add_record(record_www, "MY_SERVICE", "example.com")
+    api.commit("MY_SERVICE", "example.com")
 
 Deleting a record
 ~~~~~~~~~~~~~~~~~
@@ -114,7 +118,21 @@ Every record in the zone has an unique ID, and it's accessible via
 
 .. code:: python
 
-    api.delete_record(100000, 'MY_SERVICE', 'example.com')
-    api.commit('MY_SERVICE', 'example.com')
+    api.delete_record(100000, "MY_SERVICE", "example.com")
+    api.commit("MY_SERVICE", "example.com")
 
 Do not forget to always commit the changes!
+
+Default service and zone
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``service`` and ``zone`` parameters can be optional in all ``DnsApi``
+methods, if you set ``default_service`` and ``default_zone`` properties:
+
+.. code:: python
+
+    api.default_service = "MY_SERVICE"
+    api.default_zone = "example.com"
+
+    api.delete_record(100000)  # service zone are not needed
+    api.commit()               # and for commit() too

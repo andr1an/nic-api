@@ -33,7 +33,10 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     python_requires=">=2.7, <4.0",
-    install_requires=["requests>=2.4"],
+    install_requires=[
+        "requests>=2.4",
+        "requests-oauthlib>=1.1",
+    ],
     project_urls={
         "Bug Reports": "https://github.com/andr1an/nic-api/issues",
         "Source": "https://github.com/andr1an/nic-api",
