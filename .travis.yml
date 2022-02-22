@@ -20,15 +20,17 @@ matrix:
       dist: bionic
 
 install: |
+  set -e
   pip install .
-  if python -c 'import sys; sys.exit(1) if sys.version_info < (3, 5) else 0'
+  if python -c 'import sys; 0 if sys.version_info >= (3, 6) else sys.exit(1)'
   then
     pip install black
   fi
   pip install pytest
 
 script: |
-  if python -c 'import sys; sys.exit(1) if sys.version_info < (3, 5) else 0'
+  set -e
+  if python -c 'import sys; 0 if sys.version_info >= (3, 6) else sys.exit(1)'
   then
     black --line-length 80 --check --diff .
   fi
