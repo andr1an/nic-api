@@ -1,14 +1,8 @@
 """nic_api - classes for entities returned by API."""
 
-import sys
 from xml.etree import ElementTree
 
-
-# Python 2.7 compatibility
-if sys.version_info.major < 3:
-    _XML_ENCODING = "utf-8"
-else:
-    _XML_ENCODING = "unicode"
+from nic_api.compat import XML_ENCODING
 
 
 def _strtobool(string):
@@ -291,7 +285,7 @@ class ARecord(DNSRecord):
         _type.text = "A"
         _a = ElementTree.SubElement(root, "a")
         _a.text = self.a
-        return ElementTree.tostring(root, encoding=_XML_ENCODING)
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
     def from_xml(cls, rr):
@@ -339,7 +333,7 @@ class AAAARecord(DNSRecord):
         _type.text = "AAAA"
         _aaaa = ElementTree.SubElement(root, "aaaa")
         _aaaa.text = self.aaaa
-        return ElementTree.tostring(root, encoding=_XML_ENCODING)
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
     def from_xml(cls, rr):
@@ -388,7 +382,7 @@ class CNAMERecord(DNSRecord):
         _cname = ElementTree.SubElement(root, "cname")
         _cname_name = ElementTree.SubElement(_cname, "name")
         _cname_name.text = self.cname
-        return ElementTree.tostring(root, encoding=_XML_ENCODING)
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
     def from_xml(cls, rr):
@@ -482,7 +476,7 @@ class TXTRecord(DNSRecord):
         _txt = ElementTree.SubElement(root, "txt")
         _txt_string = ElementTree.SubElement(_txt, "string")
         _txt_string.text = self.txt
-        return ElementTree.tostring(root, encoding=_XML_ENCODING)
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
     def from_xml(cls, rr):
