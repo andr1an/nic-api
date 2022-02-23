@@ -3,7 +3,6 @@
 from __future__ import print_function
 from xml.etree import ElementTree
 import logging
-import textwrap
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import (
@@ -13,7 +12,11 @@ from oauthlib.oauth2 import (
 )
 import requests
 
-from nic_api.exceptions import DnsApiException, ExpiredToken
+from nic_api.exceptions import (
+    DnsApiException,
+    ExpiredToken,
+    InvalidRecord,
+)
 from nic_api.models import (
     parse_record,
     NICService,
@@ -45,14 +48,14 @@ def pprint(record):
     """Pretty print for DNS records."""
     _format_default = "{:45} {:6} {:6} {}"
     _format_mx = "{:45} {:6} {:6} {:4} {}"
-    _format_soa = textwrap.dedent(
-        """\
-                  {name:30} IN SOA {mname} {rname} (
-                  {serial:>50} ; Serial
-                  {refresh:>50} ; Refresh
-                  {retry:>50} ; Retry
-                  {expire:>50} ; Expire
-                  {minimum:>50})"""
+    _format_soa = (
+        "{name:30} IN SOA {mname} {rname} (\n"
+        "{serial:>50} ; Serial\n"
+        "{refresh:>50} ; Refresh\n"
+        "{retry:>50} ; Retry\n"
+        "{expire:>50} ; Expire\n"
+        "{minimum:>50} ; Minimum\n"
+        "{bracket:>50}"
     )
 
     if isinstance(record, ARecord):
@@ -106,6 +109,7 @@ def pprint(record):
                 retry=record.retry,
                 expire=record.expire,
                 minimum=record.minimum,
+                bracket=")",
             )
         )
     else:
@@ -128,6 +132,8 @@ def raise_error(raw_xml):
     error_text = errors[0].text
     if error_code == 4097:
         raise ExpiredToken(error_text)
+    elif error_code == 4327:
+        raise InvalidRecord(error_text)
 
     return None
 
@@ -338,13 +344,12 @@ class DnsApi(object):
                 record_xml,
             )
 
-        _xml = textwrap.dedent(
-            """\
-            <?xml version="1.0" encoding="UTF-8" ?>
-            <request><rr-list>
-            {}
-            </rr-list></request>"""
-        ).format("\n".join(rr_list))
+        _xml = (
+            '<?xml version="1.0" encoding="UTF-8" ?>'
+            "<request><rr-list>"
+            "{}"
+            "</rr-list></request>"
+        ).format("".join(rr_list))
 
         response = self._put(
             "services/{}/zones/{}/records".format(service, zone), data=_xml
