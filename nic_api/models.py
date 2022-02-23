@@ -265,8 +265,7 @@ class NSRecord(DNSRecord):
             root.attrib["id"] = self.id
         ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
-            _ttl = ElementTree.SubElement(root, "ttl")
-            _ttl.text = str(self.ttl)
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
         ElementTree.SubElement(root, "type").text = "NS"
         _ns = ElementTree.SubElement(root, "ns")
         ElementTree.SubElement(_ns, "name").text = self.ns
@@ -309,8 +308,7 @@ class ARecord(DNSRecord):
             root.attrib["id"] = self.id
         ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
-            _ttl = ElementTree.SubElement(root, "ttl")
-            _ttl.text = str(self.ttl)
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
         ElementTree.SubElement(root, "type").text = "A"
         ElementTree.SubElement(root, "a").text = self.a
         return ElementTree.tostring(root, encoding=XML_ENCODING)
@@ -354,8 +352,7 @@ class AAAARecord(DNSRecord):
             root.attrib["id"] = self.id
         ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
-            _ttl = ElementTree.SubElement(root, "ttl")
-            _ttl.text = str(self.ttl)
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
         ElementTree.SubElement(root, "type").text = "AAAA"
         ElementTree.SubElement(root, "aaaa").text = self.aaaa
         return ElementTree.tostring(root, encoding=XML_ENCODING)
@@ -400,8 +397,7 @@ class CNAMERecord(DNSRecord):
         _name = ElementTree.SubElement(root, "name")
         _name.text = self.name
         if self.ttl is not None:
-            _ttl = ElementTree.SubElement(root, "ttl")
-            _ttl.text = str(self.ttl)
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
         ElementTree.SubElement(root, "type").text = "CNAME"
         _cname = ElementTree.SubElement(root, "cname")
         ElementTree.SubElement(_cname, "name").text = self.cname
@@ -448,8 +444,7 @@ class MXRecord(DNSRecord):
         _name = ElementTree.SubElement(root, "name")
         _name.text = self.name
         if self.ttl is not None:
-            _ttl = ElementTree.SubElement(root, "ttl")
-            _ttl.text = str(self.ttl)
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
         ElementTree.SubElement(root, "type").text = "MX"
         _mx = ElementTree.SubElement(root, "mx")
         ElementTree.SubElement(_mx, "preference").text = str(self.preference)
@@ -505,8 +500,7 @@ class TXTRecord(DNSRecord):
         _name = ElementTree.SubElement(root, "name")
         _name.text = self.name
         if self.ttl is not None:
-            _ttl = ElementTree.SubElement(root, "ttl")
-            _ttl.text = str(self.ttl)
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
         ElementTree.SubElement(root, "type").text = "TXT"
         _txt = ElementTree.SubElement(root, "txt")
         ElementTree.SubElement(_txt, "string").text = self.txt

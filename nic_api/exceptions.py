@@ -7,3 +7,7 @@ class DnsApiException(Exception):
 
 class ExpiredToken(DnsApiException):
     """Raised when OAuth token is expired."""
+
+
+class InvalidRecord(DnsApiException):
+    """Raised when invalid record data was passed to the API."""
