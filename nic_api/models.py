@@ -199,8 +199,23 @@ class SOARecord(DNSRecord):
         self.rname = DNSRecord(**rname)
 
     def to_xml(self):
-        # TODO: add implementation if needed
-        raise NotImplementedError("Not implemented!")
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        ElementTree.SubElement(root, "type").text = "SOA"
+        _soa = ElementTree.SubElement(root, "soa")
+        _mname = ElementTree.SubElement(_soa, "mname")
+        ElementTree.SubElement(_mname, "name").text = self.mname.name
+        _rname = ElementTree.SubElement(_soa, "rname")
+        ElementTree.SubElement(_rname, "name").text = self.rname.name
+        ElementTree.SubElement(_soa, "serial").text = str(self.serial)
+        ElementTree.SubElement(_soa, "refresh").text = str(self.refresh)
+        ElementTree.SubElement(_soa, "retry").text = str(self.retry)
+        ElementTree.SubElement(_soa, "expire").text = str(self.expire)
+        ElementTree.SubElement(_soa, "minimum").text = str(self.minimum)
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
     def from_xml(cls, rr):
@@ -233,13 +248,29 @@ class SOARecord(DNSRecord):
 class NSRecord(DNSRecord):
     """Model of NS record."""
 
-    def __init__(self, ns, **kwargs):
+    ttl = None
+
+    def __init__(self, ns, ttl=None, **kwargs):
         super(NSRecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
         self.ns = ns
 
     def to_xml(self):
-        # TODO: add implementation if needed
-        raise NotImplementedError("Not implemented!")
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        if self.ttl is not None:
+            _ttl = ElementTree.SubElement(root, "ttl")
+            _ttl.text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "NS"
+        _ns = ElementTree.SubElement(root, "ns")
+        ElementTree.SubElement(_ns, "name").text = self.ns
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
     def from_xml(cls, rr):
@@ -276,15 +307,12 @@ class ARecord(DNSRecord):
         root = ElementTree.Element("rr")
         if self.id:
             root.attrib["id"] = self.id
-        _name = ElementTree.SubElement(root, "name")
-        _name.text = self.name
+        ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
             _ttl = ElementTree.SubElement(root, "ttl")
             _ttl.text = str(self.ttl)
-        _type = ElementTree.SubElement(root, "type")
-        _type.text = "A"
-        _a = ElementTree.SubElement(root, "a")
-        _a.text = self.a
+        ElementTree.SubElement(root, "type").text = "A"
+        ElementTree.SubElement(root, "a").text = self.a
         return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
@@ -324,15 +352,12 @@ class AAAARecord(DNSRecord):
         root = ElementTree.Element("rr")
         if self.id:
             root.attrib["id"] = self.id
-        _name = ElementTree.SubElement(root, "name")
-        _name.text = self.name
+        ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
             _ttl = ElementTree.SubElement(root, "ttl")
             _ttl.text = str(self.ttl)
-        _type = ElementTree.SubElement(root, "type")
-        _type.text = "AAAA"
-        _aaaa = ElementTree.SubElement(root, "aaaa")
-        _aaaa.text = self.aaaa
+        ElementTree.SubElement(root, "type").text = "AAAA"
+        ElementTree.SubElement(root, "aaaa").text = self.aaaa
         return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
@@ -377,11 +402,9 @@ class CNAMERecord(DNSRecord):
         if self.ttl is not None:
             _ttl = ElementTree.SubElement(root, "ttl")
             _ttl.text = str(self.ttl)
-        _type = ElementTree.SubElement(root, "type")
-        _type.text = "CNAME"
+        ElementTree.SubElement(root, "type").text = "CNAME"
         _cname = ElementTree.SubElement(root, "cname")
-        _cname_name = ElementTree.SubElement(_cname, "name")
-        _cname_name.text = self.cname
+        ElementTree.SubElement(_cname, "name").text = self.cname
         return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
@@ -418,8 +441,21 @@ class MXRecord(DNSRecord):
         self.exchange = exchange
 
     def to_xml(self):
-        # TODO: add implementation if needed
-        raise NotImplementedError("Not implemented!")
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        _name = ElementTree.SubElement(root, "name")
+        _name.text = self.name
+        if self.ttl is not None:
+            _ttl = ElementTree.SubElement(root, "ttl")
+            _ttl.text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "MX"
+        _mx = ElementTree.SubElement(root, "mx")
+        ElementTree.SubElement(_mx, "preference").text = str(self.preference)
+        _exchange = ElementTree.SubElement(_mx, "exchange")
+        ElementTree.SubElement(_exchange, "name").text = str(self.exchange)
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod
     def from_xml(cls, rr):
@@ -471,11 +507,9 @@ class TXTRecord(DNSRecord):
         if self.ttl is not None:
             _ttl = ElementTree.SubElement(root, "ttl")
             _ttl.text = str(self.ttl)
-        _type = ElementTree.SubElement(root, "type")
-        _type.text = "TXT"
+        ElementTree.SubElement(root, "type").text = "TXT"
         _txt = ElementTree.SubElement(root, "txt")
-        _txt_string = ElementTree.SubElement(_txt, "string")
-        _txt_string.text = self.txt
+        ElementTree.SubElement(_txt, "string").text = self.txt
         return ElementTree.tostring(root, encoding=XML_ENCODING)
 
     @classmethod

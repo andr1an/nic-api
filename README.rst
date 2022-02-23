@@ -134,5 +134,5 @@ methods, if you set ``default_service`` and ``default_zone`` properties:
     api.default_service = "MY_SERVICE"
     api.default_zone = "example.com"
 
-    api.delete_record(100000)  # service zone are not needed
-    api.commit()               # and for commit() too
+    api.delete_record(100000)  # service or zone are not needed
+    api.commit()               # the same for commit() method
