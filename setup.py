@@ -8,7 +8,7 @@ long_description = open(os.path.join(here, "README.rst"), "r").read()
 
 setup(
     name="nic_api",
-    version="0.3.0",
+    version="0.4.0",
     description="NIC.RU API wrapper library",
     long_description=long_description,
     url="https://github.com/andr1an/nic-api",
@@ -17,7 +17,7 @@ setup(
     license="GPLv3",
     packages=["nic_api"],
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Topic :: Internet :: Name Service (DNS)",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",

@@ -3,7 +3,6 @@
 from __future__ import print_function
 from xml.etree import ElementTree
 import logging
-import sys
 import textwrap
 
 from requests_oauthlib import OAuth2Session
@@ -14,11 +13,12 @@ from oauthlib.oauth2 import (
 )
 import requests
 
-from nic_api.exceptions import DnsApiException
+from nic_api.exceptions import DnsApiException, ExpiredToken
 from nic_api.models import (
     parse_record,
     NICService,
     NICZone,
+    DNSRecord,
     SOARecord,
     NSRecord,
     ARecord,
@@ -29,7 +29,7 @@ from nic_api.models import (
 )
 
 
-_RECORD_CLASSES_CAN_ADD = (ARecord, AAAARecord, CNAMERecord, TXTRecord)
+logger = logging.getLogger(__name__)
 
 
 def is_sequence(arg):
@@ -113,6 +113,25 @@ def pprint(record):
         print("Unknown record type: {}".format(type(record)))
 
 
+def raise_error(raw_xml):
+    """Tries to parse API errors and raise proper exception."""
+    try:
+        root = ElementTree.fromstring(raw_xml)
+        errors = root.findall("errors/error")
+    except ElementTree.ParseError:
+        return None
+
+    if len(errors) != 1:
+        return None
+
+    error_code = int(errors[0].attrib.get("code", -1))
+    error_text = errors[0].text
+    if error_code == 4097:
+        raise ExpiredToken(error_text)
+
+    return None
+
+
 def get_data(response):
     """Gets <data> from XML response.
 
@@ -123,11 +142,12 @@ def get_data(response):
         (xml.etree.ElementTree.Element) <data> tag of response.
     """
     if not isinstance(response, requests.Response):
-        raise TypeError('"response" must be an instance of requests.Response!')
+        raise TypeError('"response" must be an instance of requests.Response')
 
     # Processing API errors
     if response.status_code != requests.codes.ok:
-        raise DnsApiException(response.text)
+        if raise_error(response.text) is None:
+            raise DnsApiException(response.text)
 
     root = ElementTree.fromstring(response.text)
     datas = root.findall("data")
@@ -151,8 +171,7 @@ class DnsApi(object):
         token: oauthlib.oauth2.rfc6749.tokens.OAuth2Token;
         token_updater_clb: a function to call when token is updated;
         offline: lifetime of a token that app should request from OAuth;
-        scope: scope for NIC.RU services that should be requested;
-        debug: bool: enables debug logging level.
+        scope: scope for NIC.RU services that should be requested.
 
     You can obtain these credentials at the NIC.RU application authorization
     page: https://www.nic.ru/manager/oauth.cgi?step=oauth.app_register
@@ -174,7 +193,6 @@ class DnsApi(object):
         token_updater_clb=None,
         offline=3600,
         scope=".+:/dns-master/.+",
-        debug=False,
     ):
         self._app_login = app_login
         self._app_password = app_password
@@ -182,13 +200,6 @@ class DnsApi(object):
         self._token_updater_clb = token_updater_clb
         self._offline = offline
         self._scope = scope
-
-        # Logging setup
-        # TODO: remove
-        self.logger = logging.getLogger(__name__)
-        if not self.logger.handlers:
-            self.logger.addHandler(logging.StreamHandler(sys.stdout))
-        self.logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
         # Setup session
         self._session = OAuth2Session(
@@ -301,7 +312,11 @@ class DnsApi(object):
         return [parse_record(rr) for rr in _zone.findall("rr")]
 
     def add_record(self, records, service=None, zone=None):
-        """Adds records."""
+        """Adds records.
+
+        Returns:
+            a list with DNSRecord subclasses objects (with added IDs).
+        """
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
         if not is_sequence(records):
@@ -312,12 +327,12 @@ class DnsApi(object):
         rr_list = []  # for XML representations
 
         for record in _records:
-            if not isinstance(record, _RECORD_CLASSES_CAN_ADD):
-                raise TypeError("{} is not a valid DNS record!".format(record))
+            if not isinstance(record, DNSRecord):
+                raise TypeError("{} is not a valid DNS record".format(record))
             record_xml = record.to_xml()
             rr_list.append(record_xml)
-            self.logger.debug(
-                "Prepared for addition new record on service %s" " zone %s: %s",
+            logger.debug(
+                "Preparing to add a new record on service %s zone %s: %s",
                 service,
                 zone,
                 record_xml,
@@ -335,14 +350,17 @@ class DnsApi(object):
             "services/{}/zones/{}/records".format(service, zone), data=_xml
         )
 
-        self.logger.debug("Got response:\n%s", response.text)
-
         if response.status_code != requests.codes.ok:
-            raise DnsApiException(
-                "Failed to add new records:\n{}".format(response.text)
-            )
+            if raise_error(response.text) is None:
+                raise DnsApiException(
+                    "Failed to add new records:\n{}".format(response.text)
+                )
 
-        self.logger.info("Successfully added %s records", len(rr_list))
+        logger.info("Successfully added %s records", len(rr_list))
+        data = get_data(response)
+        _zone = data.find("zone")
+        assert _zone.attrib["name"] == zone
+        return [parse_record(rr) for rr in _zone.findall("rr")]
 
     def delete_record(self, record_id, service=None, zone=None):
         """Deletes record by id."""
@@ -351,7 +369,7 @@ class DnsApi(object):
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
 
-        self.logger.debug(
+        logger.debug(
             "Deleting record #%s on service %s zone %s",
             record_id,
             service,
@@ -363,10 +381,11 @@ class DnsApi(object):
         )
 
         if response.status_code != requests.codes.ok:
-            raise DnsApiException(
-                "Failed to delete record: {}".format(response.text)
-            )
-        self.logger.info("Record #%s deleted!", record_id)
+            if raise_error(response.text) is None:
+                raise DnsApiException(
+                    "Failed to delete record: {}".format(response.text)
+                )
+        logger.info("Record #%s deleted", record_id)
 
     def commit(self, service=None, zone=None):
         """Commits changes in zone."""
@@ -376,10 +395,11 @@ class DnsApi(object):
             "services/{}/zones/{}/commit".format(service, zone)
         )
         if response.status_code != requests.codes.ok:
-            raise DnsApiException(
-                "Failed to commit changes:\n{}".format(response.text)
-            )
-        self.logger.info("Changes committed!")
+            if raise_error(response.text) is None:
+                raise DnsApiException(
+                    "Failed to commit changes:\n{}".format(response.text)
+                )
+        logger.info("Changes committed")
 
     def rollback(self, service=None, zone=None):
         """Rolls back changes in zone."""
@@ -389,7 +409,8 @@ class DnsApi(object):
             "services/{}/zones/{}/rollback".format(service, zone)
         )
         if response.status_code != requests.codes.ok:
-            raise DnsApiException(
-                "Failed to rollback changes:\n{}".format(response.text)
-            )
-        self.logger.info("Changes are rolled back!")
+            if raise_error(response.text) is None:
+                raise DnsApiException(
+                    "Failed to rollback changes:\n{}".format(response.text)
+                )
+        logger.info("Changes are rolled back")
