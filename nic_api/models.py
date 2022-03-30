@@ -170,11 +170,9 @@ class DNSRecord(object):
     """Base model of NIC.RU DNS record."""
 
     def __init__(self, id_=None, name="", idn_name=None):
-        if id_ is None:
-            self.id = id_
-        else:
-            self.id = int(id_)
-        if self.id == 0:
+        self.id = id_
+
+        if self.id == "0":
             raise ValueError("Invalid record ID!")
         self.name = name
         self.idn_name = idn_name if idn_name else name
