@@ -35,6 +35,7 @@ def parse_record(rr):
         "CNAME": CNAMERecord,
         "MX": MXRecord,
         "TXT": TXTRecord,
+        "SRV": SRVRecord,
     }
 
     record_type = rr.find("type").text
@@ -525,3 +526,68 @@ class TXTRecord(DNSRecord):
         if len(txt) == 1:
             txt = txt[0]
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, txt=txt)
+
+
+class SRVRecord(DNSRecord):
+    """Model of SRV record."""
+
+    ttl = None
+
+    def __init__(self, priority, weight, port, target, ttl=None, **kwargs):
+        super(SRVRecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
+        self.priority = int(priority)
+        self.weight = int(weight)
+        self.port = int(port)
+        self.target = target
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        _name = ElementTree.SubElement(root, "name")
+        _name.text = self.name
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "SRV"
+        _srv = ElementTree.SubElement(root, "srv")
+        ElementTree.SubElement(_srv, "priority").text = str(self.priority)
+        ElementTree.SubElement(_srv, "weight").text = str(self.weight)
+        ElementTree.SubElement(_srv, "port").text = str(self.port)
+        _target = ElementTree.SubElement(_srv, "target")
+        ElementTree.SubElement(_target, "name").text = str(self.target)
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of SRVRecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find("type").text != "SRV":
+            raise ValueError("Record is not a SRV record!")
+
+        id_ = rr.attrib["id"] if "id" in rr.attrib else None
+        name = rr.find("name").text
+        idn_name = rr.find("idn-name").text
+        elem_ttl = rr.find("ttl")
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        priority = rr.find("srv/priority").text
+        weight = rr.find("srv/weight").text
+        port = rr.find("srv/port").text
+        target = rr.find("srv/target/name").text
+        return cls(
+            id_=id_,
+            name=name,
+            idn_name=idn_name,
+            ttl=ttl,
+            priority=priority,
+            weight=weight,
+            port=port,
+            target=target,
+        )
