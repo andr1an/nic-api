@@ -203,7 +203,7 @@ class SOARecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         ElementTree.SubElement(root, "name").text = self.name
         ElementTree.SubElement(root, "type").text = "SOA"
         _soa = ElementTree.SubElement(root, "soa")
@@ -263,7 +263,7 @@ class NSRecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
             ElementTree.SubElement(root, "ttl").text = str(self.ttl)
@@ -306,7 +306,7 @@ class ARecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
             ElementTree.SubElement(root, "ttl").text = str(self.ttl)
@@ -350,7 +350,7 @@ class AAAARecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         ElementTree.SubElement(root, "name").text = self.name
         if self.ttl is not None:
             ElementTree.SubElement(root, "ttl").text = str(self.ttl)
@@ -394,7 +394,7 @@ class CNAMERecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         _name = ElementTree.SubElement(root, "name")
         _name.text = self.name
         if self.ttl is not None:
@@ -441,7 +441,7 @@ class MXRecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         _name = ElementTree.SubElement(root, "name")
         _name.text = self.name
         if self.ttl is not None:
@@ -497,7 +497,7 @@ class TXTRecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         _name = ElementTree.SubElement(root, "name")
         _name.text = self.name
         if self.ttl is not None:
@@ -548,7 +548,7 @@ class SRVRecord(DNSRecord):
         """Returns an XML representation of record object."""
         root = ElementTree.Element("rr")
         if self.id:
-            root.attrib["id"] = self.id
+            root.attrib["id"] = str(self.id)
         _name = ElementTree.SubElement(root, "name")
         _name.text = self.name
         if self.ttl is not None:
