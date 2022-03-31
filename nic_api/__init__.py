@@ -247,6 +247,20 @@ class DnsApi(object):
             raise DnsApiException(str(err))
         self._token_updater(token)
 
+    def refresh_token(self, refresh_token):
+        """Refreshes authorization token."""
+        try:
+            token = self._session.refresh_token(
+                token_url=self.token_url,
+                refresh_token=refresh_token,
+                client_id=self._app_login,
+                client_secret=self._app_password,
+                offline=self._offline,
+            )
+        except (InvalidGrantError, InvalidClientError) as err:
+            raise DnsApiException(str(err))
+        self._token_updater(token)
+
     def _url_for(self, url):
         return "{}/dns-master/{}".format(self.base_url, url)
 

@@ -60,7 +60,14 @@ with the same OAuth config, and pass the cached token as ``token`` parameter:
 
     api = DnsApi(app_login, app_password, token)
 
-You can add a callback to cache the token with ``token_updater_clb`` parameter.
+If you have a valid refresh token, you can get a new access token with it:
+
+.. code:: python
+
+    api.refresh_token(refresh_token)
+
+You can add a callback to cache the token with ``token_updater_clb`` parameter
+of the class constructor.
 
 Viewing services and DNS zones
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
