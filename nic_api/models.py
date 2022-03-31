@@ -527,6 +527,7 @@ class TXTRecord(DNSRecord):
             txt = txt[0]
         return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, txt=txt)
 
+
 class SRVRecord(DNSRecord):
     """Model of SRV record."""
 
