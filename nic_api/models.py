@@ -591,3 +591,309 @@ class SRVRecord(DNSRecord):
             port=port,
             target=target,
         )
+
+
+class PTRRecord(DNSRecord):
+    """Model of PTR record."""
+
+    ttl = None
+
+    def __init__(self, ptr, ttl=None, **kwargs):
+        super(PTRRecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
+        self.ptr = ptr
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "PTR"
+        _ptr = ElementTree.SubElement(root, "ptr")
+        ElementTree.SubElement(_ptr, "name").text = self.ptr
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of PTRRecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find("type").text != "PTR":
+            raise ValueError("Record is not an PTR record!")
+
+        id_ = rr.attrib["id"] if "id" in rr.attrib else None
+        name = rr.find("name").text
+        idn_name = rr.find("idn-name").text
+        elem_ttl = rr.find("ttl")
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        ptr = rr.find("ptr/name").text
+        return cls(
+            id_=id_,
+            name=name,
+            idn_name=idn_name,
+            ttl=ttl,
+            ptr=ptr
+        )
+
+
+class DNAMERecord(DNSRecord):
+    """Model of DNAME record."""
+
+    ttl = None
+
+    def __init__(self, dname, ttl=None, **kwargs):
+        super(DNAMERecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
+        self.dname = dname
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "DNAME"
+        _dname = ElementTree.SubElement(root, "dname")
+        ElementTree.SubElement(_dname, "name").text = self.dname
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of DNAMERecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find("type").text != "DNAME":
+            raise ValueError("Record is not an DNAME record!")
+
+        id_ = rr.attrib["id"] if "id" in rr.attrib else None
+        name = rr.find("name").text
+        idn_name = rr.find("idn-name").text
+        elem_ttl = rr.find("ttl")
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        dname = rr.find("dname/name").text
+        return cls(
+            id_=id_,
+            name=name,
+            idn_name=idn_name,
+            ttl=ttl,
+            dname=dname
+        )
+
+
+class HINFORecord(DNSRecord):
+    """Model of HINFO record."""
+
+    ttl = None
+
+    def __init__(self, hinfo, ttl=None, **kwargs):
+        super(HINFORecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
+        self.hinfo = hinfo
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "HINFO"
+        _hinfo = ElementTree.SubElement(root, "hinfo")
+        ElementTree.SubElement(_hinfo, "name").text = self.hinfo
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of HINFORecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find("type").text != "HINFO":
+            raise ValueError("Record is not an HINFO record!")
+
+        id_ = rr.attrib["id"] if "id" in rr.attrib else None
+        name = rr.find("name").text
+        idn_name = rr.find("idn-name").text
+        elem_ttl = rr.find("ttl")
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        hinfo = rr.find("hinfo/name").text
+        return cls(
+            id_=id_,
+            name=name,
+            idn_name=idn_name,
+            ttl=ttl,
+            hinfo=hinfo
+        )
+
+
+class NAPTRRecord(DNSRecord):
+    """Model of NAPTR record."""
+
+    ttl = None
+
+    def __init__(self, naptr, ttl=None, **kwargs):
+        super(NAPTRRecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
+        self.naptr = naptr
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "NAPTR"
+        _naptr = ElementTree.SubElement(root, "naptr")
+        ElementTree.SubElement(_naptr, "name").text = self.naptr
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of NAPTRRecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find("type").text != "NAPTR":
+            raise ValueError("Record is not an NAPTR record!")
+
+        id_ = rr.attrib["id"] if "id" in rr.attrib else None
+        name = rr.find("name").text
+        idn_name = rr.find("idn-name").text
+        elem_ttl = rr.find("ttl")
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        naptr = rr.find("naptr/name").text
+        return cls(
+            id_=id_,
+            name=name,
+            idn_name=idn_name,
+            ttl=ttl,
+            naptr=naptr
+        )
+
+
+class RPRecord(DNSRecord):
+    """Model of RP record."""
+
+    ttl = None
+
+    def __init__(self, rp, ttl=None, **kwargs):
+        super(RPRecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
+        self.rp = rp
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "RP"
+        _rp = ElementTree.SubElement(root, "rp")
+        ElementTree.SubElement(_rp, "name").text = self.rp
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of RPRecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find("type").text != "RP":
+            raise ValueError("Record is not an HINFO record!")
+
+        id_ = rr.attrib["id"] if "id" in rr.attrib else None
+        name = rr.find("name").text
+        idn_name = rr.find("idn-name").text
+        elem_ttl = rr.find("ttl")
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        rp = rr.find("rp/name").text
+        return cls(
+            id_=id_,
+            name=name,
+            idn_name=idn_name,
+            ttl=ttl,
+            rp=rp
+        )
+
+
+class CAARecord(DNSRecord):
+    """Model of CAA record."""
+
+    ttl = None
+
+    def __init__(self, caa, ttl=None, **kwargs):
+        super(CAARecord, self).__init__(**kwargs)
+        if ttl is not None:
+            self.ttl = int(ttl)
+            if self.ttl == 0:
+                raise ValueError("Invalid TTL!")
+        self.caa = caa
+
+    def to_xml(self):
+        """Returns an XML representation of record object."""
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = self.id
+        ElementTree.SubElement(root, "name").text = self.name
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = "CAA"
+        _caa = ElementTree.SubElement(root, "caa")
+        ElementTree.SubElement(_caa, "name").text = self.caa
+        return ElementTree.tostring(root, encoding=XML_ENCODING)
+
+    @classmethod
+    def from_xml(cls, rr):
+        """Alternative constructor - creates an instance of CAARecord from
+        its XML representation.
+        """
+        if not isinstance(rr, ElementTree.Element):
+            raise TypeError('"rr" must be an instance of ElementTree.Element')
+        if rr.find("type").text != "CAA":
+            raise ValueError("Record is not an CAA record!")
+
+        id_ = rr.attrib["id"] if "id" in rr.attrib else None
+        name = rr.find("name").text
+        idn_name = rr.find("idn-name").text
+        elem_ttl = rr.find("ttl")
+        ttl = elem_ttl.text if elem_ttl is not None else None
+        caa = rr.find("caa/name").text
+        return cls(
+            id_=id_,
+            name=name,
+            idn_name=idn_name,
+            ttl=ttl,
+            caa=caa
+        )

@@ -29,6 +29,13 @@ from nic_api.models import (
     CNAMERecord,
     MXRecord,
     TXTRecord,
+    PTRRecord,
+    SRVRecord,
+    DNAMERecord,
+    HINFORecord,
+    NAPTRRecord,
+    RPRecord,
+    CAARecord,
 )
 
 
