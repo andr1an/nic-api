@@ -29,13 +29,12 @@ from nic_api.models import (
     CNAMERecord,
     MXRecord,
     TXTRecord,
-    PTRRecord,
     SRVRecord,
+    PTRRecord,
     DNAMERecord,
     HINFORecord,
     NAPTRRecord,
     RPRecord,
-    CAARecord,
 )
 
 
@@ -64,6 +63,10 @@ def pprint(record):
         "{minimum:>50} ; Minimum\n"
         "{bracket:>50}"
     )
+    _format_srv = "{:45} {:6} {:6} {:6} {:6} {:6} {:45}"
+    _format_hinfo = "{:45} {:6} {:6} {:45} {:45}"
+    _format_naptr = "{:45} {:6} {:6} {:45} {:45} {:45} {:45} {:45} {}"
+    _format_rp = "{:45} {:6} {:6} {:45} {:45}"
 
     if isinstance(record, ARecord):
         print(
@@ -117,6 +120,70 @@ def pprint(record):
                 expire=record.expire,
                 minimum=record.minimum,
                 bracket=")",
+            )
+        )
+    elif isinstance(record, SRVRecord):
+        print(
+            _format_srv.format(
+                record.name,
+                record.ttl,
+                "SRV",
+                record.priority,
+                record.weight,
+                record.port,
+                record.target
+            )
+        )
+    elif isinstance(record, PTRRecord):
+        print(
+            _format_default.format(
+                record.name,
+                record.ttl,
+                "PTR",
+                record.ptr
+            )
+        )
+    elif isinstance(record, DNAMERecord):
+        print(
+            _format_default.format(
+                record.name,
+                record.ttl,
+                "DNAME",
+                record.dname
+            )
+        )
+    elif isinstance(record, HINFORecord):
+        print(
+            _format_hinfo.format(
+                record.name,
+                record.ttl,
+                "HINFO",
+                record.hardware,
+                record.os
+            )
+        )
+    elif isinstance(record, NAPTRRecord):
+        print(
+            _format_naptr.format(
+                record.name,
+                record.ttl,
+                "NAPTR",
+                record.order,
+                record.preference,
+                record.flags,
+                record.service,
+                record.regexp,
+                record.replacement
+            )
+        )
+    elif isinstance(record, RPRecord):
+        print(
+            _format_rp.format(
+                record.name,
+                record.ttl,
+                "RP",
+                record.mbox,
+                record.txt
             )
         )
     else:
