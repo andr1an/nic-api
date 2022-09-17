@@ -640,13 +640,7 @@ class PTRRecord(DNSRecord):
         elem_ttl = rr.find("ttl")
         ttl = elem_ttl.text if elem_ttl is not None else None
         ptr = rr.find("ptr/name").text
-        return cls(
-            id_=id_,
-            name=name,
-            idn_name=idn_name,
-            ttl=ttl,
-            ptr=ptr
-        )
+        return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, ptr=ptr)
 
 
 class DNAMERecord(DNSRecord):
@@ -691,13 +685,7 @@ class DNAMERecord(DNSRecord):
         elem_ttl = rr.find("ttl")
         ttl = elem_ttl.text if elem_ttl is not None else None
         dname = rr.find("dname/name").text
-        return cls(
-            id_=id_,
-            name=name,
-            idn_name=idn_name,
-            ttl=ttl,
-            dname=dname
-        )
+        return cls(id_=id_, name=name, idn_name=idn_name, ttl=ttl, dname=dname)
 
 
 class HINFORecord(DNSRecord):

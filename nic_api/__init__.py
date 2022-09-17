@@ -131,35 +131,23 @@ def pprint(record):
                 record.priority,
                 record.weight,
                 record.port,
-                record.target
+                record.target,
             )
         )
     elif isinstance(record, PTRRecord):
         print(
-            _format_default.format(
-                record.name,
-                record.ttl,
-                "PTR",
-                record.ptr
-            )
+            _format_default.format(record.name, record.ttl, "PTR", record.ptr)
         )
     elif isinstance(record, DNAMERecord):
         print(
             _format_default.format(
-                record.name,
-                record.ttl,
-                "DNAME",
-                record.dname
+                record.name, record.ttl, "DNAME", record.dname
             )
         )
     elif isinstance(record, HINFORecord):
         print(
             _format_hinfo.format(
-                record.name,
-                record.ttl,
-                "HINFO",
-                record.hardware,
-                record.os
+                record.name, record.ttl, "HINFO", record.hardware, record.os
             )
         )
     elif isinstance(record, NAPTRRecord):
@@ -173,17 +161,13 @@ def pprint(record):
                 record.flags,
                 record.service,
                 record.regexp,
-                record.replacement
+                record.replacement,
             )
         )
     elif isinstance(record, RPRecord):
         print(
             _format_rp.format(
-                record.name,
-                record.ttl,
-                "RP",
-                record.mbox,
-                record.txt
+                record.name, record.ttl, "RP", record.mbox, record.txt
             )
         )
     else:
