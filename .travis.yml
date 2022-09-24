@@ -21,6 +21,7 @@ matrix:
 
 install: |
   set -e
+  pip install --upgrade pip setuptools importlib-metadata
   pip install .
   if python -c 'import sys; 0 if sys.version_info >= (3, 6) else sys.exit(1)'
   then
