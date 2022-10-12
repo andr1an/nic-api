@@ -234,7 +234,7 @@ class DnsApi(object):
         app_password: OAuth application password;
         token: oauthlib.oauth2.rfc6749.tokens.OAuth2Token;
         token_updater_clb: a function to call when token is updated;
-        offline: lifetime of a token that app should request from OAuth;
+        offline: set non-zero value to obtain reissue token (possible values: 0, 1, true, false);
         scope: scope for NIC.RU services that should be requested.
 
     You can obtain these credentials at the NIC.RU application authorization
@@ -255,7 +255,7 @@ class DnsApi(object):
         app_password,
         token=None,
         token_updater_clb=None,
-        offline=3600,
+        offline=1,
         scope=".+:/dns-master/.+",
     ):
         self._app_login = app_login
