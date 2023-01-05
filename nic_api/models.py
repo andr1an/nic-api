@@ -23,7 +23,6 @@ def parse_record(rr):
         one of SOARecord, NSRecord, ARecord, AAAARecord, CNAMERecord, MXRecord,
         TXTRecord.
     """
-    # TODO: move this to the DNSRecord class as "from_xml"
     if not isinstance(rr, ElementTree.Element):
         raise TypeError('"rr" must be an instance of ElementTree.Element')
 
@@ -139,7 +138,7 @@ class NICZone(object):
 
     def to_xml(self):
         # TODO: add implementation if needed
-        raise NotImplementedError("Not implemented!")
+        raise NotImplementedError("Not implemented")
 
     @classmethod
     def from_xml(cls, zone):
@@ -175,18 +174,35 @@ class NICZone(object):
 class DNSRecord(object):
     """Base model of NIC.RU DNS record."""
 
+    ttl = None
+
     def __init__(self, id_=None, name="", idn_name=None):
         if id_ is None:
             self.id = id_
         else:
             self.id = int(id_)
         if self.id == 0:
-            raise ValueError("Invalid record ID!")
+            raise ValueError("Invalid record ID")
         self.name = name
         self.idn_name = idn_name if idn_name else name
 
     def __repr__(self):
         return repr(vars(self))
+
+    @property
+    def record_type(self):
+        raise AttributeError("Class DNSRecord does not have a record_type")
+
+    @property
+    def as_etree(self):
+        root = ElementTree.Element("rr")
+        if self.id:
+            root.attrib["id"] = str(self.id)
+        ElementTree.SubElement(root, "name").text = self.name
+        ElementTree.SubElement(root, "type").text = self.record_type
+        if self.ttl is not None:
+            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        return root
 
 
 class SOARecord(DNSRecord):
@@ -204,13 +220,13 @@ class SOARecord(DNSRecord):
         self.mname = DNSRecord(**mname)
         self.rname = DNSRecord(**rname)
 
+    @property
+    def record_type(self):
+        return "SOA"
+
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        ElementTree.SubElement(root, "name").text = self.name
-        ElementTree.SubElement(root, "type").text = "SOA"
+        root = self.as_etree
         _soa = ElementTree.SubElement(root, "soa")
         _mname = ElementTree.SubElement(_soa, "mname")
         ElementTree.SubElement(_mname, "name").text = self.mname.name
@@ -231,7 +247,7 @@ class SOARecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "SOA":
-            raise ValueError("Record is not a SOA record!")
+            raise ValueError("Record is not an SOA record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -261,18 +277,16 @@ class NSRecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.ns = ns
+
+    @property
+    def record_type(self):
+        return "NS"
 
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "NS"
+        root = self.as_etree
         _ns = ElementTree.SubElement(root, "ns")
         ElementTree.SubElement(_ns, "name").text = self.ns
         return ElementTree.tostring(root, encoding=XML_ENCODING)
@@ -285,7 +299,7 @@ class NSRecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "NS":
-            raise ValueError("Record is not a NS record!")
+            raise ValueError("Record is not an NS record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -304,18 +318,16 @@ class ARecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.a = a
+
+    @property
+    def record_type(self):
+        return "A"
 
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "A"
+        root = self.as_etree
         ElementTree.SubElement(root, "a").text = self.a
         return ElementTree.tostring(root, encoding=XML_ENCODING)
 
@@ -327,7 +339,7 @@ class ARecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "A":
-            raise ValueError("Record is not an A record!")
+            raise ValueError("Record is not an A record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -348,18 +360,16 @@ class AAAARecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.aaaa = aaaa
+
+    @property
+    def record_type(self):
+        return "AAAA"
 
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "AAAA"
+        root = self.as_etree
         ElementTree.SubElement(root, "aaaa").text = self.aaaa
         return ElementTree.tostring(root, encoding=XML_ENCODING)
 
@@ -371,7 +381,7 @@ class AAAARecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "AAAA":
-            raise ValueError("Record is not an AAAA record!")
+            raise ValueError("Record is not an AAAA record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -392,19 +402,16 @@ class CNAMERecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.cname = cname
+
+    @property
+    def record_type(self):
+        return "CNAME"
 
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        _name = ElementTree.SubElement(root, "name")
-        _name.text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "CNAME"
+        root = self.as_etree
         _cname = ElementTree.SubElement(root, "cname")
         ElementTree.SubElement(_cname, "name").text = self.cname
         return ElementTree.tostring(root, encoding=XML_ENCODING)
@@ -417,7 +424,7 @@ class CNAMERecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "CNAME":
-            raise ValueError("Record is not a CNAME record!")
+            raise ValueError("Record is not a CNAME record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -438,20 +445,17 @@ class MXRecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.preference = int(preference)
         self.exchange = exchange
 
+    @property
+    def record_type(self):
+        return "MX"
+
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        _name = ElementTree.SubElement(root, "name")
-        _name.text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "MX"
+        root = self.as_etree
         _mx = ElementTree.SubElement(root, "mx")
         ElementTree.SubElement(_mx, "preference").text = str(self.preference)
         _exchange = ElementTree.SubElement(_mx, "exchange")
@@ -466,7 +470,7 @@ class MXRecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "MX":
-            raise ValueError("Record is not an MX record!")
+            raise ValueError("Record is not an MX record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -495,19 +499,16 @@ class TXTRecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.txt = txt
+
+    @property
+    def record_type(self):
+        return "TXT"
 
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        _name = ElementTree.SubElement(root, "name")
-        _name.text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "TXT"
+        root = self.as_etree
         _txt = ElementTree.SubElement(root, "txt")
         ElementTree.SubElement(_txt, "string").text = self.txt
         return ElementTree.tostring(root, encoding=XML_ENCODING)
@@ -520,7 +521,7 @@ class TXTRecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "TXT":
-            raise ValueError("Record is not a TXT record!")
+            raise ValueError("Record is not a TXT record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -543,22 +544,19 @@ class SRVRecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.priority = int(priority)
         self.weight = int(weight)
         self.port = int(port)
         self.target = target
 
+    @property
+    def record_type(self):
+        return "SRV"
+
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = str(self.id)
-        _name = ElementTree.SubElement(root, "name")
-        _name.text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "SRV"
+        root = self.as_etree
         _srv = ElementTree.SubElement(root, "srv")
         ElementTree.SubElement(_srv, "priority").text = str(self.priority)
         ElementTree.SubElement(_srv, "weight").text = str(self.weight)
@@ -575,7 +573,7 @@ class SRVRecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "SRV":
-            raise ValueError("Record is not a SRV record!")
+            raise ValueError("Record is not an SRV record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -608,18 +606,16 @@ class PTRRecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.ptr = ptr
+
+    @property
+    def record_type(self):
+        return "PTR"
 
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = self.id
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "PTR"
+        root = self.as_etree
         _ptr = ElementTree.SubElement(root, "ptr")
         ElementTree.SubElement(_ptr, "name").text = self.ptr
         return ElementTree.tostring(root, encoding=XML_ENCODING)
@@ -632,7 +628,7 @@ class PTRRecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "PTR":
-            raise ValueError("Record is not an PTR record!")
+            raise ValueError("Record is not a PTR record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -653,18 +649,16 @@ class DNAMERecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.dname = dname
+
+    @property
+    def record_type(self):
+        return "DNAME"
 
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = self.id
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "DNAME"
+        root = self.as_etree
         _dname = ElementTree.SubElement(root, "dname")
         ElementTree.SubElement(_dname, "name").text = self.dname
         return ElementTree.tostring(root, encoding=XML_ENCODING)
@@ -677,7 +671,7 @@ class DNAMERecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "DNAME":
-            raise ValueError("Record is not an DNAME record!")
+            raise ValueError("Record is not a DNAME record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -700,20 +694,18 @@ class HINFORecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.hinfo = hinfo
         self.hardware = hardware
         self.os = os
 
+    @property
+    def record_type(self):
+        return "HINFO"
+
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = self.id
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "HINFO"
+        root = self.as_etree
         _hinfo = ElementTree.SubElement(root, "hinfo")
         ElementTree.SubElement(_hinfo, "hardware").text = self.hardware
         ElementTree.SubElement(_hinfo, "os").text = self.os
@@ -727,7 +719,7 @@ class HINFORecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "HINFO":
-            raise ValueError("Record is not an HINFO record!")
+            raise ValueError("Record is not an HINFO record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -773,7 +765,7 @@ class NAPTRRecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.order = int(order)
         self.preference = int(preference)
         self.naptr = naptr
@@ -782,15 +774,13 @@ class NAPTRRecord(DNSRecord):
         self.regexp = regexp
         self.replacement = replacement
 
+    @property
+    def record_type(self):
+        return "NAPTR"
+
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = self.id
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "NAPTR"
+        root = self.as_etree
         _naptr = ElementTree.SubElement(root, "naptr")
         ElementTree.SubElement(_naptr, "order").text = str(self.order)
         ElementTree.SubElement(_naptr, "preference").text = str(self.preference)
@@ -809,7 +799,7 @@ class NAPTRRecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "NAPTR":
-            raise ValueError("Record is not an NAPTR record!")
+            raise ValueError("Record is not an NAPTR record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text
@@ -848,20 +838,18 @@ class RPRecord(DNSRecord):
         if ttl is not None:
             self.ttl = int(ttl)
             if self.ttl == 0:
-                raise ValueError("Invalid TTL!")
+                raise ValueError("Invalid TTL")
         self.rp = rp
         self.mbox = mbox
         self.txt = txt
 
+    @property
+    def record_type(self):
+        return "RP"
+
     def to_xml(self):
         """Returns an XML representation of record object."""
-        root = ElementTree.Element("rr")
-        if self.id:
-            root.attrib["id"] = self.id
-        ElementTree.SubElement(root, "name").text = self.name
-        if self.ttl is not None:
-            ElementTree.SubElement(root, "ttl").text = str(self.ttl)
-        ElementTree.SubElement(root, "type").text = "RP"
+        root = self.as_etree
         _rp = ElementTree.SubElement(root, "rp")
         _mbox = ElementTree.SubElement(_rp, "mbox-dname")
         ElementTree.SubElement(_mbox, "name").text = self.mbox
@@ -877,7 +865,7 @@ class RPRecord(DNSRecord):
         if not isinstance(rr, ElementTree.Element):
             raise TypeError('"rr" must be an instance of ElementTree.Element')
         if rr.find("type").text != "RP":
-            raise ValueError("Record is not an HINFO record!")
+            raise ValueError("Record is not an HINFO record")
 
         id_ = rr.attrib["id"] if "id" in rr.attrib else None
         name = rr.find("name").text

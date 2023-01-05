@@ -442,7 +442,7 @@ class DnsApi(object):
     def delete_record(self, record_id, service=None, zone=None):
         """Deletes record by id."""
         if not isinstance(record_id, int):
-            raise TypeError('"record_id" is not a valid int!')
+            raise TypeError('"record_id" is not a valid int')
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
 
