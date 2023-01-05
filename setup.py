@@ -8,7 +8,7 @@ long_description = open(os.path.join(here, "README.rst"), "r").read()
 
 setup(
     name="nic_api",
-    version="0.4.1",
+    version="0.4.2",
     description="NIC.RU API wrapper library",
     long_description=long_description,
     url="https://github.com/andr1an/nic-api",
@@ -31,6 +31,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     python_requires=">=2.7, <4.0",
     install_requires=[

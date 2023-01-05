@@ -18,6 +18,8 @@ matrix:
       dist: bionic
     - python: 3.10
       dist: bionic
+    - python: 3.11
+      dist: bionic
 
 install: |
   set -e
