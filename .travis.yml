@@ -1,40 +1,16 @@
 language: python
 
-matrix:
-  include:
-    - python: 2.7
-      dist: trusty
-    - python: 3.4
-      dist: trusty
-    - python: 3.5
-      dist: trusty
-    - python: 3.6
-      dist: trusty
-    - python: 3.7
-      dist: xenial
-    - python: 3.8
-      dist: bionic
-    - python: 3.9
-      dist: bionic
-    - python: 3.10
-      dist: bionic
-    - python: 3.11
-      dist: bionic
+dist: jammy
 
-install: |
-  set -e
-  pip install --upgrade pip setuptools importlib-metadata
-  pip install .
-  if python -c 'import sys; 0 if sys.version_info >= (3, 6) else sys.exit(1)'
-  then
-    pip install black
-  fi
-  pip install pytest
+python:
+  - "3.8"
+  - "3.9"
+  - "3.10"
+  - "3.11"
 
-script: |
-  set -e
-  if python -c 'import sys; 0 if sys.version_info >= (3, 6) else sys.exit(1)'
-  then
-    black --line-length 80 --check --diff .
-  fi
-  py.test
+install:
+  - python -m pip install '.[dev]'
+
+script:
+  - black --check --diff .
+  - pytest

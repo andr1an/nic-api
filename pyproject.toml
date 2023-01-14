@@ -1,0 +1,44 @@
+[project]
+name = "nic_api"
+version = "1.0.0"
+authors = [
+    { name="Sergey Andrianov", email="info@andrian.ninja" },
+]
+description = "NIC.RU API Python library"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python",
+    "Topic :: Internet :: Name Service (DNS)",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "requests>=2.4",
+    "requests-oauthlib>=1.1",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/andr1an/nic-api"
+"Bug Tracker" = "https://github.com/andr1an/nic-api/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+]
+
+[tool.black]
+line-length = 80

@@ -1,7 +1,10 @@
-"""NIC.RU (Ru-Center) DNS services manager."""
+"""NIC.RU (Ru-Center) DNS API library."""
 
-from __future__ import print_function
+
+from typing import List
+from typing import Union
 from xml.etree import ElementTree
+import importlib.metadata
 import logging
 
 from requests_oauthlib import OAuth2Session
@@ -16,6 +19,8 @@ from nic_api.exceptions import (
     DnsApiException,
     ExpiredToken,
     InvalidRecord,
+    ServiceNotFound,
+    ZoneNotFound,
 )
 from nic_api.models import (
     parse_record,
@@ -38,10 +43,12 @@ from nic_api.models import (
 )
 
 
+__version__ = importlib.metadata.version("nic_api")
+
 logger = logging.getLogger(__name__)
 
 
-def is_sequence(arg):
+def _is_sequence(arg):
     """Returns if argument is list/tuple/etc. or not."""
     return (
         not hasattr(arg, "strip")
@@ -64,9 +71,9 @@ def pprint(record):
         "{bracket:>50}"
     )
     _format_srv = "{:45} {:6} {:6} {:6} {:6} {:6} {:45}"
-    _format_hinfo = "{:45} {:6} {:6} {:45} {:45}"
-    _format_naptr = "{:45} {:6} {:6} {:45} {:45} {:45} {:45} {:45} {}"
-    _format_rp = "{:45} {:6} {:6} {:45} {:45}"
+    _format_hinfo = '{:45} {:6} {:6} "{}" "{}"'
+    _format_naptr = '{:45} {:6} {:6} {:6} {:6} "{}" "{}" "{}" "{}"'
+    _format_rp = "{:45} {:6} {:6} {} {}"
 
     if isinstance(record, ARecord):
         print(
@@ -89,14 +96,17 @@ def pprint(record):
     elif isinstance(record, CNAMERecord):
         print(
             _format_default.format(
-                record.name, record.ttl, "CNAME", record.cname
+                record.name,
+                record.ttl if record.ttl is not None else "",
+                "CNAME",
+                record.cname,
             )
         )
     elif isinstance(record, MXRecord):
         print(
             _format_mx.format(
                 record.name,
-                record.ttl,
+                record.ttl if record.ttl is not None else "",
                 "MX",
                 record.preference,
                 record.exchange,
@@ -104,7 +114,12 @@ def pprint(record):
         )
     elif isinstance(record, TXTRecord):
         print(
-            _format_default.format(record.name, record.ttl, "TXT", record.txt)
+            _format_default.format(
+                record.name,
+                record.ttl if record.ttl is not None else "",
+                "TXT",
+                record.txt,
+            )
         )
     elif isinstance(record, NSRecord):
         print(_format_default.format(record.name, " ", "NS", record.ns))
@@ -126,7 +141,7 @@ def pprint(record):
         print(
             _format_srv.format(
                 record.name,
-                record.ttl,
+                record.ttl if record.ttl is not None else "",
                 "SRV",
                 record.priority,
                 record.weight,
@@ -136,38 +151,54 @@ def pprint(record):
         )
     elif isinstance(record, PTRRecord):
         print(
-            _format_default.format(record.name, record.ttl, "PTR", record.ptr)
+            _format_default.format(
+                record.name if record.name is not None else "",
+                record.ttl if record.ttl is not None else "",
+                "PTR",
+                record.ptr,
+            )
         )
     elif isinstance(record, DNAMERecord):
         print(
             _format_default.format(
-                record.name, record.ttl, "DNAME", record.dname
+                record.name,
+                record.ttl if record.ttl is not None else "",
+                "DNAME",
+                record.dname,
             )
         )
     elif isinstance(record, HINFORecord):
         print(
             _format_hinfo.format(
-                record.name, record.ttl, "HINFO", record.hardware, record.os
+                record.name,
+                record.ttl if record.ttl is not None else "",
+                "HINFO",
+                record.hardware,
+                record.os,
             )
         )
     elif isinstance(record, NAPTRRecord):
         print(
             _format_naptr.format(
                 record.name,
-                record.ttl,
+                record.ttl if record.ttl is not None else "",
                 "NAPTR",
                 record.order,
                 record.preference,
                 record.flags,
                 record.service,
-                record.regexp,
-                record.replacement,
+                record.regexp if record.regexp is not None else "",
+                record.replacement if record.replacement is not None else "",
             )
         )
     elif isinstance(record, RPRecord):
         print(
             _format_rp.format(
-                record.name, record.ttl, "RP", record.mbox, record.txt
+                record.name,
+                record.ttl if record.ttl is not None else "",
+                "RP",
+                record.mbox,
+                record.txt,
             )
         )
     else:
@@ -175,16 +206,16 @@ def pprint(record):
         print("Unknown record type: {}".format(type(record)))
 
 
-def raise_error(raw_xml):
+def raise_error(raw_xml: str):
     """Tries to parse API errors and raise proper exception."""
     try:
         root = ElementTree.fromstring(raw_xml)
         errors = root.findall("errors/error")
     except ElementTree.ParseError:
-        return None
+        return
 
     if len(errors) != 1:
-        return None
+        return
 
     error_code = int(errors[0].attrib.get("code", -1))
     error_text = errors[0].text
@@ -192,11 +223,13 @@ def raise_error(raw_xml):
         raise ExpiredToken(error_text)
     elif error_code == 4327:
         raise InvalidRecord(error_text)
+    elif error_code == 4009:
+        raise ServiceNotFound(error_text)
+    elif error_code == 4028:
+        raise ZoneNotFound(error_text)
 
-    return None
 
-
-def get_data(response):
+def get_data(response: requests.Response):
     """Gets <data> from XML response.
 
     Arguments:
@@ -205,13 +238,9 @@ def get_data(response):
     Returns:
         (xml.etree.ElementTree.Element) <data> tag of response.
     """
-    if not isinstance(response, requests.Response):
-        raise TypeError('"response" must be an instance of requests.Response')
-
-    # Processing API errors
     if response.status_code != requests.codes.ok:
-        if raise_error(response.text) is None:
-            raise DnsApiException(response.text)
+        raise_error(response.text)
+        raise DnsApiException(response.text)
 
     root = ElementTree.fromstring(response.text)
     datas = root.findall("data")
@@ -290,7 +319,7 @@ class DnsApi(object):
         if self._token_updater_clb is not None:
             self._token_updater_clb(token)
 
-    def get_token(self, username, password):
+    def get_token(self, username, password) -> None:
         """Gets authorization token."""
         try:
             token = self._session.fetch_token(
@@ -305,7 +334,7 @@ class DnsApi(object):
             raise DnsApiException(str(err))
         self._token_updater(token)
 
-    def refresh_token(self, refresh_token):
+    def refresh_token(self, refresh_token) -> None:
         """Refreshes authorization token."""
         try:
             token = self._session.refresh_token(
@@ -338,7 +367,7 @@ class DnsApi(object):
         """Wraps requests.delete()"""
         return self._session.delete(self._url_for(url))
 
-    def services(self):
+    def services(self) -> List[NICService]:
         """Get services available for management.
 
         Returns:
@@ -348,7 +377,7 @@ class DnsApi(object):
         data = get_data(response)
         return [NICService.from_xml(service) for service in data]
 
-    def zones(self, service=None):
+    def zones(self, service=None) -> List[NICZone]:
         """Get zones in service.
 
         Returns:
@@ -356,13 +385,13 @@ class DnsApi(object):
         """
         service = self.default_service if service is None else service
         if service is None:
-            response = self._get("zones".format(service))
+            response = self._get("zones")
         else:
             response = self._get("services/{}/zones".format(service))
         data = get_data(response)
         return [NICZone.from_xml(zone) for zone in data]
 
-    def zonefile(self, service=None, zone=None):
+    def zonefile(self, service=None, zone=None) -> str:
         """Get zone file for single zone.
 
         Returns:
@@ -373,7 +402,7 @@ class DnsApi(object):
         response = self._get("services/{}/zones/{}".format(service, zone))
         return response.text
 
-    def records(self, service=None, zone=None):
+    def records(self, service=None, zone=None) -> List[DNSRecord]:
         """Get all records for single zone.
 
         Returns:
@@ -389,7 +418,12 @@ class DnsApi(object):
         assert _zone.attrib["name"] == zone
         return [parse_record(rr) for rr in _zone.findall("rr")]
 
-    def add_record(self, records, service=None, zone=None):
+    def add_record(
+        self,
+        records: Union[DNSRecord, List[DNSRecord]],
+        service=None,
+        zone=None,
+    ) -> List[DNSRecord]:
         """Adds records.
 
         Returns:
@@ -397,7 +431,7 @@ class DnsApi(object):
         """
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
-        if not is_sequence(records):
+        if not _is_sequence(records):
             _records = [records]
         else:
             _records = list(records)
@@ -405,8 +439,6 @@ class DnsApi(object):
         rr_list = []  # for XML representations
 
         for record in _records:
-            if not isinstance(record, DNSRecord):
-                raise TypeError("{} is not a valid DNS record".format(record))
             record_xml = record.to_xml()
             rr_list.append(record_xml)
             logger.debug(
@@ -428,10 +460,10 @@ class DnsApi(object):
         )
 
         if response.status_code != requests.codes.ok:
-            if raise_error(response.text) is None:
-                raise DnsApiException(
-                    "Failed to add new records:\n{}".format(response.text)
-                )
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to add new records:\n{}".format(response.text)
+            )
 
         logger.info("Successfully added %s records", len(rr_list))
         data = get_data(response)
@@ -439,10 +471,8 @@ class DnsApi(object):
         assert _zone.attrib["name"] == zone
         return [parse_record(rr) for rr in _zone.findall("rr")]
 
-    def delete_record(self, record_id, service=None, zone=None):
+    def delete_record(self, record_id: int, service=None, zone=None) -> None:
         """Deletes record by id."""
-        if not isinstance(record_id, int):
-            raise TypeError('"record_id" is not a valid int')
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
 
@@ -458,13 +488,14 @@ class DnsApi(object):
         )
 
         if response.status_code != requests.codes.ok:
-            if raise_error(response.text) is None:
-                raise DnsApiException(
-                    "Failed to delete record: {}".format(response.text)
-                )
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to delete record:\n{}".format(response.text)
+            )
+
         logger.info("Record #%s deleted", record_id)
 
-    def commit(self, service=None, zone=None):
+    def commit(self, service=None, zone=None) -> None:
         """Commits changes in zone."""
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
@@ -472,13 +503,13 @@ class DnsApi(object):
             "services/{}/zones/{}/commit".format(service, zone)
         )
         if response.status_code != requests.codes.ok:
-            if raise_error(response.text) is None:
-                raise DnsApiException(
-                    "Failed to commit changes:\n{}".format(response.text)
-                )
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to commit changes:\n{}".format(response.text)
+            )
         logger.info("Changes committed")
 
-    def rollback(self, service=None, zone=None):
+    def rollback(self, service=None, zone=None) -> None:
         """Rolls back changes in zone."""
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
@@ -486,8 +517,8 @@ class DnsApi(object):
             "services/{}/zones/{}/rollback".format(service, zone)
         )
         if response.status_code != requests.codes.ok:
-            if raise_error(response.text) is None:
-                raise DnsApiException(
-                    "Failed to rollback changes:\n{}".format(response.text)
-                )
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to rollback changes:\n{}".format(response.text)
+            )
         logger.info("Changes are rolled back")
