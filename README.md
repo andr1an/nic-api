@@ -136,6 +136,30 @@ api.delete_record(100000)  # service or zone are not required now
 api.commit()               # the same for commit() method
 ```
 
+### Internationalized domain names
+
+For using IDNs, you need to encode parameters with Punycode before passing them
+to the classes or methods, with the only exception of `idn_name` argument. In
+Python 3.7+ this is done with calling `.encode("idna").decode()` methods on the
+`str` object:
+
+```python
+record_idn = ARecord(a="192.168.0.1", name="тест".encode("idna").decode())
+api.add_record(record_idn, "MY_SERVICE", "example.com")
+api.commit("MY_SERVICE", "example.com")
+```
+
+For working with top-level IDNs, use the same approach:
+
+```python
+api.records("MY_SERIVCE", "мой-домен.рф".encode("idna").decode())
+
+# or:
+api.default_service = "MY_SERVICE"
+api.default_zone = "мой-домен.рф".encode("idna").decode()
+api.records()
+```
+
 ## Note for Python old versions' users
 
 Python 2.7 was EOLed on 2020-01-01, and Python 3.7 is going to be EOLed on

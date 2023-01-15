@@ -271,7 +271,8 @@ class DnsApi(object):
 
     For easier calling public methods, it is possible to set up a default
     NIC.RU service and a DNS zone via `DnsApi.default_service` and
-    `DnsApi.default_zone` attributes.
+    `DnsApi.default_zone` attributes. In case of using IDNs (non-ASCII domain
+    names), those attribute values should be encoded with Punycode.
     """
 
     base_url = "https://api.nic.ru"

@@ -21,7 +21,10 @@ from nic_api.models import (
 def _parse_record_nonstrict(xml_string: str) -> ElementTree.Element:
     rr = ElementTree.fromstring(xml_string)
     if not rr.find("idn-name"):
-        ElementTree.SubElement(rr, "idn-name").text = rr.find("name").text
+        _name = rr.find("name").text
+        if _name:
+            _name = _name.encode().decode("idna")
+        ElementTree.SubElement(rr, "idn-name").text = _name
     return parse_record(rr)
 
 
@@ -67,6 +70,18 @@ def test_export_and_parse_a():
     record_parsed = _parse_record_nonstrict(record_xml)
     assert isinstance(record_parsed, ARecord)
     assert record_parsed.a == "192.168.0.1"
+
+
+def test_export_and_parse_a_idna():
+    record = ARecord(a="192.168.0.2", name="тест".encode("idna").decode())
+    record_xml = record.to_xml()
+    assert isinstance(record_xml, str)
+    assert record_xml
+    record_parsed = _parse_record_nonstrict(record_xml)
+    assert isinstance(record_parsed, ARecord)
+    assert record_parsed.a == "192.168.0.2"
+    assert record_parsed.name == "xn--e1aybc"
+    assert record_parsed.idn_name == "тест"
 
 
 def test_export_and_parse_aaaa():

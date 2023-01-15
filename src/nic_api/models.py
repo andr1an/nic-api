@@ -171,8 +171,15 @@ class DNSRecord(object):
             self.id = int(id_)
         if self.id == 0:
             raise ValueError("Invalid record ID")
+        if name is not None and not name.isascii():
+            raise ValueError("Name should be an ASCII string")
         self.name = name
-        self.idn_name = idn_name if idn_name else name
+        if idn_name is not None:
+            self.idn_name = idn_name
+        elif name is not None:
+            self.idn_name = name.encode().decode("idna")
+        else:
+            self.idn_name = name
 
     def __repr__(self):
         return repr(vars(self))
