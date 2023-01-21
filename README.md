@@ -11,12 +11,8 @@ Using `pip`:
 pip install nic-api
 ```
 
-If you want to use the module in your project, add the following line to the
-file `requirements.txt`:
-
-```
-nic-api
-```
+If you want to use this module in your project, add `nic-api` to its
+dependencies.
 
 ## Usage
 
@@ -26,7 +22,7 @@ To start using the API, you should get an OAuth application login and a
 password from NIC.RU. Here is the registration page:
 https://www.nic.ru/manager/oauth.cgi?step=oauth.app_register
 
-Create an instance of `nic_api.DnsApi` and provide obtained credentials:
+Create an instance of `nic_api.DnsApi` and provide the obtained credentials:
 
 ```python
 from nic_api import DnsApi
@@ -63,8 +59,8 @@ If you have a valid refresh token, you can get a new access token with it:
 api.refresh_token(refresh_token)
 ```
 
-You can add a callback to cache the token with `token_updater_clb` parameter
-of the class constructor.
+You can add a callback method to save the token somewhere outside of the
+`DnsApi` object. Use the `token_updater_clb` parameter for that.
 
 ### Viewing services and DNS zones
 
@@ -74,15 +70,15 @@ In the NIC.RU, DNS zones are located in “services”:
 api.services()
 ```
 
-Usually, there is only one service per account. To view available zones in the
-service `MY_SERVICE`, call `DnsApi.zones()`:
+Usually there is only one service per account. To view available zones in the
+service `MY_SERVICE` call `DnsApi.zones()`:
 
 ```python
 api.zones("MY_SERVICE")
 ```
 
-**Always check if the zone has any uncommitted changes to it before making any
-modifications – your commit would apply all unsaved changes!**
+**Always check if there are any uncommitted changes in the zone before making
+any modifications – your commit would apply all unsaved changes!**
 
 ### Getting DNS records
 
@@ -140,7 +136,7 @@ api.commit()               # the same for commit() method
 
 For using IDNs, you need to encode parameters with Punycode before passing them
 to the classes or methods, with the only exception of `idn_name` argument. In
-Python 3.7+ this is done with calling `.encode("idna").decode()` methods on the
+Python 3.7+ this is done via calling `.encode("idna").decode()` methods on the
 `str` object:
 
 ```python
