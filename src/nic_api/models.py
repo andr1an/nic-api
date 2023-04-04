@@ -194,9 +194,9 @@ class DNSRecord(object):
         if self.id:
             root.attrib["id"] = str(self.id)
         ElementTree.SubElement(root, "name").text = self.name
-        ElementTree.SubElement(root, "type").text = self.record_type
         if self.ttl is not None:
             ElementTree.SubElement(root, "ttl").text = str(self.ttl)
+        ElementTree.SubElement(root, "type").text = self.record_type
         return root
 
 
