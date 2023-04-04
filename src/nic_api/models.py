@@ -716,7 +716,7 @@ class NAPTRRecord(DNSRecord):
         regexp="",
         replacement="",
         ttl=None,
-        **kwargs
+        **kwargs,
     ):
         super(NAPTRRecord, self).__init__(**kwargs)
         if ttl is not None:
