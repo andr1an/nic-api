@@ -11,3 +11,11 @@ class ExpiredToken(DnsApiException):
 
 class InvalidRecord(DnsApiException):
     """Raised when invalid record data was passed to the API."""
+
+
+class ServiceNotFound(DnsApiException):
+    """Raised when specified service was not found."""
+
+
+class ZoneNotFound(DnsApiException):
+    """Raised when specified DNS zone was not found on the service."""
