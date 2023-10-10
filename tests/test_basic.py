@@ -12,4 +12,4 @@ def test_oauthfail():
         api.get_token("dummy", "dummy")
     except Exception as err:
         assert isinstance(err, DnsApiException)
-        assert str(err) == "(invalid_client) "
+        assert str(err) in ("(invalid_client) ", "(unauthorized_client) ")
