@@ -12,6 +12,7 @@ from oauthlib.oauth2 import (
     LegacyApplicationClient,
     InvalidGrantError,
     InvalidClientError,
+    UnauthorizedClientError,
 )
 import requests
 
@@ -331,7 +332,11 @@ class DnsApi(object):
                 client_secret=self._app_password,
                 offline=self._offline,
             )
-        except (InvalidGrantError, InvalidClientError) as err:
+        except (
+            InvalidGrantError,
+            InvalidClientError,
+            UnauthorizedClientError,
+        ) as err:
             raise DnsApiException(str(err))
         self._token_updater(token)
 
