@@ -1,6 +1,6 @@
 [project]
 name = "nic_api"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
     { name="Sergey Andrianov", email="info@andrian.ninja" },
 ]
@@ -17,6 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python",
     "Topic :: Internet :: Name Service (DNS)",
     "Topic :: Software Development :: Libraries :: Python Modules",
