@@ -17,5 +17,9 @@ class ServiceNotFound(DnsApiException):
     """Raised when specified service was not found."""
 
 
+class ZoneAlreadyExists(DnsApiException):
+    """Raised when specified DNS zone already exists on the service."""
+
+
 class ZoneNotFound(DnsApiException):
     """Raised when specified DNS zone was not found on the service."""

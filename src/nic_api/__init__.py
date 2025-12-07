@@ -1,48 +1,46 @@
 """NIC.RU (Ru-Center) DNS API library."""
 
-
-from typing import List
-from typing import Union
-from xml.etree import ElementTree
 import importlib.metadata
 import logging
+from typing import List, Union
+from xml.etree import ElementTree
 
-from requests_oauthlib import OAuth2Session
+import requests
 from oauthlib.oauth2 import (
-    LegacyApplicationClient,
-    InvalidGrantError,
     InvalidClientError,
+    InvalidGrantError,
+    LegacyApplicationClient,
     UnauthorizedClientError,
 )
-import requests
+from requests_oauthlib import OAuth2Session
 
 from nic_api.exceptions import (
     DnsApiException,
     ExpiredToken,
     InvalidRecord,
     ServiceNotFound,
+    ZoneAlreadyExists,
     ZoneNotFound,
 )
 from nic_api.models import (
-    parse_record,
+    AAAARecord,
+    ARecord,
+    CNAMERecord,
+    DNAMERecord,
+    DNSRecord,
+    HINFORecord,
+    MXRecord,
+    NAPTRRecord,
     NICService,
     NICZone,
-    DNSRecord,
-    SOARecord,
     NSRecord,
-    ARecord,
-    AAAARecord,
-    CNAMERecord,
-    MXRecord,
-    TXTRecord,
-    SRVRecord,
     PTRRecord,
-    DNAMERecord,
-    HINFORecord,
-    NAPTRRecord,
     RPRecord,
+    SOARecord,
+    SRVRecord,
+    TXTRecord,
+    parse_record,
 )
-
 
 __version__ = importlib.metadata.version("nic_api")
 
@@ -228,6 +226,8 @@ def raise_error(raw_xml: str):
         raise ServiceNotFound(error_text)
     elif error_code == 4028:
         raise ZoneNotFound(error_text)
+    elif error_code == 4021:
+        raise ZoneAlreadyExists(error_text)
 
 
 def get_data(response: requests.Response):
@@ -244,13 +244,21 @@ def get_data(response: requests.Response):
         raise DnsApiException(response.text)
 
     root = ElementTree.fromstring(response.text)
+
+    status = root.findall("status")
+    if status[0].text != "success":
+        raise_error(response.text)
+        raise DnsApiException(response.text)
+
     datas = root.findall("data")
-    if len(datas) != 1:
+    if len(datas) == 0:
+        return []
+    elif len(datas) == 1:
+        return datas[0]
+    else:
         raise ValueError(
             "Can't find exact 1 <data> in response:\n{}".format(response.text)
         )
-
-    return datas[0]
 
 
 class DnsApi(object):
@@ -396,6 +404,30 @@ class DnsApi(object):
             response = self._get("services/{}/zones".format(service))
         data = get_data(response)
         return [NICZone.from_xml(zone) for zone in data]
+
+    def add_zone(self, service=None, zone=None) -> List[NICZone]:
+        response = self._put("services/{}/zones/{}".format(service, zone))
+        if response.status_code != requests.codes.ok:
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to add zone:\n{}".format(response.text)
+            )
+        logger.info("Successfully added zone %s to service %s", zone, service)
+        data = get_data(response)
+        _zone = data.find("zone")
+        assert _zone.attrib["name"] == zone
+        return NICZone.from_xml(_zone)
+
+    def delete_zone(self, service=None, zone=None) -> None:
+        response = self._delete("services/{}/zones/{}".format(service, zone))
+        if response.status_code != requests.codes.ok:
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to delete zone:\n{}".format(response.text)
+            )
+        logger.info(
+            "Successfully deleted zone %s from service %s", zone, service
+        )
 
     def zonefile(self, service=None, zone=None) -> str:
         """Get zone file for single zone.

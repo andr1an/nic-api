@@ -1,6 +1,5 @@
 """nic_api - classes for entities returned by API."""
 
-
 from xml.etree import ElementTree
 
 
