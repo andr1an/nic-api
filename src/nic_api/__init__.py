@@ -440,6 +440,15 @@ class DnsApi(object):
         response = self._get("services/{}/zones/{}".format(service, zone))
         return response.text
 
+    def set_zonefile(self, service=None, zone=None, zonefile=None) -> None:
+        """Set zone file for single zone."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._post(
+            "services/{}/zones/{}".format(service, zone), data=zonefile
+        )
+        _ = get_data(response)
+
     def records(self, service=None, zone=None) -> List[DNSRecord]:
         """Get all records for single zone.
 
