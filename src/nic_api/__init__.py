@@ -406,6 +406,15 @@ class DnsApi(object):
         return [NICZone.from_xml(zone) for zone in data]
 
     def add_zone(self, service=None, zone=None) -> List[NICZone]:
+        """Add zone to service.
+
+        Args:
+            service: service name.
+            zone: zone name.
+
+        Returns:
+            a list of NICZone objects.
+        """
         response = self._put("services/{}/zones/{}".format(service, zone))
         if response.status_code != requests.codes.ok:
             raise_error(response.text)
@@ -419,6 +428,12 @@ class DnsApi(object):
         return NICZone.from_xml(_zone)
 
     def delete_zone(self, service=None, zone=None) -> None:
+        """Delete zone from service.
+
+        Args:
+            service: service name.
+            zone: zone name.
+        """
         response = self._delete("services/{}/zones/{}".format(service, zone))
         if response.status_code != requests.codes.ok:
             raise_error(response.text)
@@ -473,6 +488,35 @@ class DnsApi(object):
         )
         response = self._post(
             "services/{}/zones/{}/default-ttl".format(service, zone), data=data
+        )
+        _ = get_data(response)
+
+    def get_masters(self, service=None, zone=None) -> List[str]:
+        """Get masters for single zone.
+
+        Returns:
+            a list with master IP addresses.
+        """
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._get(
+            "services/{}/zones/{}/masters".format(service, zone)
+        )
+        data = get_data(response)
+        return [m.text for m in data.findall("address")]
+
+    def set_masters(self, masters: List[str], service=None, zone=None) -> None:
+        """Set masters for single zone."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        _xml = (
+            '<?xml version="1.0" encoding="UTF-8" ?>'
+            "<request><address>"
+            "{}"
+            "</address></request>"
+        ).format("</address><address>".join(masters))
+        response = self._post(
+            "services/{}/zones/{}/masters".format(service, zone), data=_xml
         )
         _ = get_data(response)
 
