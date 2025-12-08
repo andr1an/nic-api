@@ -518,6 +518,14 @@ class DnsApi(object):
         )
         _ = get_data(response)
 
+    def move_zone(self, zone: str, new_service: str, service=None) -> None:
+        """Move zone to another service."""
+        service = self.default_service if service is None else service
+        response = self._post(
+            "services/{}/zones/{}/move/{}".format(service, zone, new_service)
+        )
+        _ = get_data(response)
+
     def get_default_ttl(self, service=None, zone=None) -> int:
         """Get default TTL for single zone.
 
