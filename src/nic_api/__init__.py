@@ -449,6 +449,33 @@ class DnsApi(object):
         )
         _ = get_data(response)
 
+    def get_default_ttl(self, service=None, zone=None) -> int:
+        """Get default TTL for single zone.
+
+        Returns:
+            default TTL for zone.
+        """
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._get(
+            "services/{}/zones/{}/default-ttl".format(service, zone)
+        )
+        data = get_data(response)
+        default_ttl = data.find("default-ttl")
+        return int(default_ttl.text)
+
+    def set_default_ttl(self, service=None, zone=None, ttl: int = 3600) -> None:
+        """Set default TTL for single zone."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        data = "<request><default-ttl>{}</default-ttl></request>".format(
+            int(ttl)
+        )
+        response = self._post(
+            "services/{}/zones/{}/default-ttl".format(service, zone), data=data
+        )
+        _ = get_data(response)
+
     def records(self, service=None, zone=None) -> List[DNSRecord]:
         """Get all records for single zone.
 
