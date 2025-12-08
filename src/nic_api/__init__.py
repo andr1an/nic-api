@@ -491,6 +491,33 @@ class DnsApi(object):
         )
         _ = get_data(response)
 
+    def get_xfer(self, zone=None, service=None):
+        """Get allowed XFER addresses for single zone.
+
+        Returns:
+            a list with IP addresses.
+        """
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._get("services/{}/zones/{}/xfer".format(service, zone))
+        data = get_data(response)
+        return [m.text for m in data.findall("address")]
+
+    def set_xfer(self, masters, zone=None, service=None):
+        """Set allowed XFER addresses for single zone."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        _xml = (
+            '<?xml version="1.0" encoding="UTF-8" ?>'
+            "<request><address>"
+            "{}"
+            "</address></request>"
+        ).format("</address><address>".join(masters))
+        response = self._post(
+            "services/{}/zones/{}/xfer".format(service, zone), data=_xml
+        )
+        _ = get_data(response)
+
     def get_default_ttl(self, service=None, zone=None) -> int:
         """Get default TTL for single zone.
 
