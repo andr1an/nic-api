@@ -428,6 +428,31 @@ class DnsApi(object):
         assert _zone.attrib["name"] == zone
         return NICZone.from_xml(_zone)
 
+    def add_zone_auto(self, zone: str, service_type: str) -> List[NICZone]:
+        """Add zone with automatic service selection.
+
+        Args:
+            zone: zone name.
+
+        Returns:
+            a list of NICZone objects.
+        """
+        if service_type not in ("primary", "secondary"):
+            raise ValueError("Invalid service type")
+        response = self._put("/zones/{}/{}".format(service_type, zone))
+        if response.status_code != requests.codes.ok:
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to add zone:\n{}".format(response.text)
+            )
+        logger.info(
+            "Successfully added zone %s with automatic service selection", zone
+        )
+        data = get_data(response)
+        _zone = data.find("zone")
+        assert _zone.attrib["name"] == zone
+        return NICZone.from_xml(_zone)
+
     def delete_zone(self, zone: str, service=None) -> None:
         """Delete zone from service.
 
