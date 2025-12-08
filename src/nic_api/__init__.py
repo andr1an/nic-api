@@ -405,7 +405,7 @@ class DnsApi(object):
         data = get_data(response)
         return [NICZone.from_xml(zone) for zone in data]
 
-    def add_zone(self, service=None, zone=None) -> List[NICZone]:
+    def add_zone(self, zone: str, service=None) -> List[NICZone]:
         """Add zone to service.
 
         Args:
@@ -415,6 +415,7 @@ class DnsApi(object):
         Returns:
             a list of NICZone objects.
         """
+        service = self.default_service if service is None else service
         response = self._put("services/{}/zones/{}".format(service, zone))
         if response.status_code != requests.codes.ok:
             raise_error(response.text)
@@ -427,13 +428,14 @@ class DnsApi(object):
         assert _zone.attrib["name"] == zone
         return NICZone.from_xml(_zone)
 
-    def delete_zone(self, service=None, zone=None) -> None:
+    def delete_zone(self, zone: str, service=None) -> None:
         """Delete zone from service.
 
         Args:
             service: service name.
             zone: zone name.
         """
+        service = self.default_service if service is None else service
         response = self._delete("services/{}/zones/{}".format(service, zone))
         if response.status_code != requests.codes.ok:
             raise_error(response.text)
@@ -455,7 +457,7 @@ class DnsApi(object):
         response = self._get("services/{}/zones/{}".format(service, zone))
         return response.text
 
-    def set_zonefile(self, service=None, zone=None, zonefile=None) -> None:
+    def set_zonefile(self, zonefile: str, service=None, zone=None) -> None:
         """Set zone file for single zone."""
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
@@ -479,7 +481,7 @@ class DnsApi(object):
         default_ttl = data.find("default-ttl")
         return int(default_ttl.text)
 
-    def set_default_ttl(self, service=None, zone=None, ttl: int = 3600) -> None:
+    def set_default_ttl(self, ttl: int, service=None, zone=None) -> None:
         """Set default TTL for single zone."""
         service = self.default_service if service is None else service
         zone = self.default_zone if zone is None else zone
