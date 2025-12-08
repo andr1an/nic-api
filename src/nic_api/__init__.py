@@ -33,6 +33,7 @@ from nic_api.models import (
     NAPTRRecord,
     NICService,
     NICZone,
+    NICZoneRevision,
     NSRecord,
     PTRRecord,
     RPRecord,
@@ -674,6 +675,21 @@ class DnsApi(object):
             )
 
         logger.info("Record #%s deleted", record_id)
+
+    def list_revisions(self, service=None, zone=None) -> List[NICZoneRevision]:
+        """Returns a list of revisions for a zone."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._get(
+            "services/{}/zones/{}/revisions".format(service, zone)
+        )
+        if response.status_code != requests.codes.ok:
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to get revisions:\n{}".format(response.text)
+            )
+        data = get_data(response)
+        return [parse_record(rr) for rr in data.findall("revision")]
 
     def commit(self, service=None, zone=None) -> None:
         """Commits changes in zone."""

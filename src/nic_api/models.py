@@ -147,6 +147,40 @@ class NICZone(object):
 
 
 # *****************************************************************************
+# Model of DNS zone revision
+#
+
+
+class NICZoneRevision(object):
+    """Model of zone revision object."""
+
+    def __init__(self, date: str, ip: str, number: int):
+        self.date = date
+        self.ip = ip
+        self.number = number
+
+    def __repr__(self):
+        return repr(vars(self))
+
+    def to_xml(self):
+        root = ElementTree.Element("revision")
+        root.attrib["date"] = str(self.date)
+        root.attrib["ip"] = str(self.ip)
+        root.attrib["number"] = str(self.number)
+        return ElementTree.tostring(root, encoding="unicode")
+
+    @classmethod
+    def from_xml(cls, zone_revision: ElementTree.Element):
+        """Alternative constructor - creates an instance of NICZone from
+        its XML representation.
+        """
+        kwargs = {
+            k.replace("-", "_"): v for k, v in zone_revision.attrib.items()
+        }
+        return cls(**kwargs)
+
+
+# *****************************************************************************
 # Models of DNS records
 #
 # Each model has __init__() method that loads data into object by direct
