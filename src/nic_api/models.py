@@ -157,7 +157,7 @@ class NICZoneRevision(object):
     def __init__(self, date: str, ip: str, number: int):
         self.date = date
         self.ip = ip
-        self.number = number
+        self.number = int(number)
 
     def __repr__(self):
         return repr(vars(self))

@@ -23,3 +23,7 @@ class ZoneAlreadyExists(DnsApiException):
 
 class ZoneNotFound(DnsApiException):
     """Raised when specified DNS zone was not found on the service."""
+
+
+class InvalidDomainName(DnsApiException):
+    """Raised when invalid domain name was passed to the API."""

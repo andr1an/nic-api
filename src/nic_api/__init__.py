@@ -17,6 +17,7 @@ from requests_oauthlib import OAuth2Session
 from nic_api.exceptions import (
     DnsApiException,
     ExpiredToken,
+    InvalidDomainName,
     InvalidRecord,
     ServiceNotFound,
     ZoneAlreadyExists,
@@ -227,6 +228,8 @@ def raise_error(raw_xml: str):
         raise ServiceNotFound(error_text)
     elif error_code == 4028:
         raise ZoneNotFound(error_text)
+    elif error_code == 4020:
+        raise InvalidDomainName(error_text)
     elif error_code == 4021:
         raise ZoneAlreadyExists(error_text)
 
@@ -689,7 +692,35 @@ class DnsApi(object):
                 "Failed to get revisions:\n{}".format(response.text)
             )
         data = get_data(response)
-        return [parse_record(rr) for rr in data.findall("revision")]
+        return [NICZoneRevision.from_xml(r) for r in data.findall("revision")]
+
+    def get_revision(self, revision: int, service=None, zone=None) -> str:
+        """Returns zone file for a specific revision."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._get(
+            "services/{}/zones/{}/revisions/{}".format(service, zone, revision)
+        )
+        if response.status_code != requests.codes.ok:
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to get revisions:\n{}".format(response.text)
+            )
+        return response.text
+
+    def set_revision(self, revision: int, service=None, zone=None) -> None:
+        """Sets the zone to the specified revision."""
+        service = self.default_service if service is None else service
+        zone = self.default_zone if zone is None else zone
+        response = self._put(
+            "services/{}/zones/{}/revisions/{}".format(service, zone, revision)
+        )
+        if response.status_code != requests.codes.ok:
+            raise_error(response.text)
+            raise DnsApiException(
+                "Failed to get revisions:\n{}".format(response.text)
+            )
+        _ = get_data(response)
 
     def commit(self, service=None, zone=None) -> None:
         """Commits changes in zone."""
