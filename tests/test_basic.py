@@ -13,3 +13,5 @@ def test_oauthfail():
     except Exception as err:
         assert isinstance(err, DnsApiException)
         assert str(err) in ("(invalid_client) ", "(unauthorized_client) ")
+    finally:
+        api.close()

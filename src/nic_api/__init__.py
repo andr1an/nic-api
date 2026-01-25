@@ -749,3 +749,7 @@ class DnsApi(object):
                 "Failed to rollback changes:\n{}".format(response.text)
             )
         logger.info("Changes are rolled back")
+
+    def close(self):
+        self._session.close()
+        logger.info("Closed OAuth2Session session")
